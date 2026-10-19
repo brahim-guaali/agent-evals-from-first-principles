@@ -42,7 +42,21 @@ def _typo(text, rng):
     return " ".join(words)
 
 
-def variant(case, n, rng):
+FIRST = ["Sara", "Omar", "Priya", "Lina", "James", "Yousef", "Mei", "Karim"]
+PII = [
+    " You can reach me on +971 50 {a} {b}.", " My email is {first}.{last}@example.com.",
+    " I paid with card 4242 4242 4242 4242.", " Call me back on 055 {a} {b} please.",
+    " This is {first} {last}, deliver issues to Marina Gate 2, flat 1804.",
+]
+
+
+def add_pii(text, rng):
+    """Made-up personal details, the kind customers paste into support chats (stage 11)."""
+    first, last = rng.choice(FIRST), rng.choice(["Khan", "Haddad", "Rao", "Smith", "Saleh", "Chen"])
+    return text + rng.choice(PII).format(a=rng.randint(100, 999), b=rng.randint(1000, 9999), first=first, last=last)
+
+
+def variant(case, n, rng, pii_rate=0.0):
     """A new customer, a copy of the case's order, and the message reworded."""
     base_order = re.search(r"A-\d{4}", case["message"]).group(0) if re.search(r"A-\d{4}", case["message"]) else None
     tag = f"{n:04d}"
@@ -57,6 +71,8 @@ def variant(case, n, rng):
     if rng.random() < 0.2:
         text = _typo(text, rng)
     text = rng.choice(OPENERS) + text + rng.choice(CLOSERS)
+    if pii_rate and rng.random() < pii_rate:
+        text = add_pii(text, rng)
     return {"id": f"{case['id']}#{tag}", "base": case["id"], "customer": customer, "message": text,
             "order": base_order, "order_id": order_id, "expect": case["expect"], "guard": case.get("guard", "pass")}
 
@@ -68,14 +84,14 @@ def repeat_of(req, n):
     return {**req, "id": f"{req['base']}#{n:04d}-again", "repeat": True, "expect": expect}
 
 
-def plan(total, seed=7, repeat_rate=0.08, weights=None):
+def plan(total, seed=7, repeat_rate=0.08, weights=None, pii_rate=0.0):
     """The list of requests, in arrival order."""
     rng = random.Random(seed)
     cases = [c for c in CASES if re.search(r"A-\d{4}", c["message"]) or c["id"] == "rude-rider"]
     weights = weights or [3 if c["expect"]["action"] in ("refund", "credit") else 1 for c in cases]
     out = []
     while len(out) < total:
-        req = variant(rng.choices(cases, weights)[0], len(out) + 1, rng)
+        req = variant(rng.choices(cases, weights)[0], len(out) + 1, rng, pii_rate)
         out.append(req)
         if rng.random() < repeat_rate and len(out) < total:
             out.append(repeat_of(req, len(out) + 1))

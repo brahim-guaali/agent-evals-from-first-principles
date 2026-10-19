@@ -21,6 +21,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import httpx
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel
@@ -54,6 +55,10 @@ def db():
         create table if not exists turns (
             id integer primary key autoincrement, session_id text, customer text, role text,
             text text, run_id text, created_at text);
+        create table if not exists points (
+            id integer primary key autoincrement, name text, kind text, t real, start real,
+            environment text, attributes text, count integer, sum real, bounds text, buckets text, value real);
+        create index if not exists points_name_t on points (name, t);
         create table if not exists spans (
             span_id text primary key, trace_id text, parent_id text, name text, start real, end_ real,
             status text, body text);
@@ -579,3 +584,133 @@ def clear_traces():
     with _lock, db() as conn:
         conn.execute("delete from spans")
     return {"ok": True}
+
+
+# --- metrics from the collector (stage 10) ----------------------------------------------------
+COLLECTOR = os.environ.get("COLLECTOR_URL", "http://127.0.0.1:4318")
+DASHBOARD_UI = Path(__file__).resolve().parent / "ui" / "dashboard.html"
+
+
+@app.post("/v1/points")
+def post_points(points: list[dict]):
+    """Metric points (delta temporality: each one covers its own interval)."""
+    with _lock, db() as conn:
+        conn.executemany(
+            "insert into points (name, kind, t, start, environment, attributes, count, sum, bounds, buckets, value) "
+            "values (?,?,?,?,?,?,?,?,?,?,?)",
+            [(p["name"], p["kind"], p["t"], p["start"], p.get("environment"), json.dumps(p["attributes"]),
+              p.get("count"), p.get("sum"), json.dumps(p.get("bounds")), json.dumps(p.get("buckets")), p.get("value"))
+             for p in points])
+    return {"received": len(points)}
+
+
+def percentile(bounds, buckets, q):
+    """A quantile from histogram buckets, interpolating inside the bucket it falls in.
+    Approximate by design: all a histogram keeps is counts per bucket."""
+    total = sum(buckets)
+    if not total:
+        return None
+    rank, seen = q * total, 0
+    for i, n in enumerate(buckets):
+        if seen + n >= rank and n:
+            lo = bounds[i - 1] if i > 0 else 0.0
+            hi = bounds[i] if i < len(bounds) else bounds[-1] * 2
+            return lo + (hi - lo) * (rank - seen) / n
+        seen += n
+    return bounds[-1]
+
+
+@app.get("/metrics/series")
+def metric_series(name: str, window: int = 60, since: float = 0, where: str = "", group_by: str = ""):
+    """Points of one metric, merged per time window (and per attribute value if group_by):
+    histograms give count, mean, p50/p95/p99; counters give the sum."""
+    with db() as conn:
+        rows = conn.execute("select * from points where name = ? and t >= ? order by t", (name, since)).fetchall()
+    filt = dict(kv.split("=", 1) for kv in where.split(",") if "=" in kv)
+    series = {}
+    for r in rows:
+        a = json.loads(r["attributes"])
+        if any(str(a.get(k)) != v for k, v in filt.items()):
+            continue
+        key = (str(a.get(group_by)) if group_by else "all", int(r["t"] // window * window))
+        b = series.setdefault(key, {"count": 0, "sum": 0.0, "value": 0.0, "bounds": None, "buckets": None})
+        if r["kind"] == "histogram":
+            bk = json.loads(r["buckets"])
+            b["bounds"] = json.loads(r["bounds"])
+            b["buckets"] = [x + y for x, y in zip(b["buckets"], bk)] if b["buckets"] else bk
+            b["count"] += r["count"]
+            b["sum"] += r["sum"]
+        else:
+            b["value"] += r["value"] or 0
+    out = []
+    for (group, t), b in sorted(series.items(), key=lambda kv: kv[0][1]):
+        row = {"group": group, "t": t}
+        if b["buckets"]:
+            row.update(count=b["count"], mean=b["sum"] / b["count"] if b["count"] else None,
+                       p50=percentile(b["bounds"], b["buckets"], .5), p95=percentile(b["bounds"], b["buckets"], .95),
+                       p99=percentile(b["bounds"], b["buckets"], .99))
+        else:
+            row["value"] = b["value"]
+        out.append(row)
+    return out
+
+
+@app.get("/metrics/names")
+def metric_names():
+    with db() as conn:
+        return [dict(r) for r in conn.execute("select name, kind, count(*) points, min(t) first, max(t) last "
+                                              "from points group by name, kind order by name")]
+
+
+@app.get("/collector/stats")
+def collector_stats():
+    try:
+        return httpx.get(f"{COLLECTOR}/stats", timeout=2).json()
+    except httpx.HTTPError:
+        return {"error": "collector not running (make collector)"}
+
+
+@app.get("/ui/dashboard", response_class=HTMLResponse)
+def dashboard_ui():
+    return DASHBOARD_UI.read_text()
+
+
+@app.post("/admin/clear-metrics")
+def clear_metrics():
+    with _lock, db() as conn:
+        conn.execute("delete from points")
+    return {"ok": True}
+
+
+# --- retention (stage 11) ---------------------------------------------------------------------
+RETENTION_DAYS = float(os.environ.get("RETENTION_DAYS", "30"))
+
+
+class Retention(BaseModel):
+    days: float | None = None
+    before: float | None = None         # or an exact cut-off (unix time)
+
+
+@app.post("/admin/retention")
+def apply_retention(r: Retention):
+    """Delete spans and metric points older than the cut-off. The archive files are the
+    collector's job (POST /retention there)."""
+    cutoff = r.before if r.before is not None else datetime.now(timezone.utc).timestamp() - 86400 * (
+        r.days if r.days is not None else RETENTION_DAYS)
+    with _lock, db() as conn:
+        spans = conn.execute("delete from spans where end_ < ?", (cutoff,)).rowcount
+        points = conn.execute("delete from points where t < ?", (cutoff,)).rowcount
+    return {"cutoff": cutoff, "spans_deleted": spans, "points_deleted": points}
+
+
+def _retention_loop():
+    import time as _t
+    while True:
+        _t.sleep(3600)
+        try:
+            apply_retention(Retention())
+        except Exception:
+            pass
+
+
+threading.Thread(target=_retention_loop, daemon=True).start()

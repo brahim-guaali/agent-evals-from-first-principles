@@ -19,6 +19,7 @@ process.
 """
 import operator
 import sqlite3
+import time
 from pathlib import Path
 from typing import Annotated, Optional, TypedDict
 
@@ -163,7 +164,9 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
                     else {"gen_ai.data_source.id": what})}
         kind = telemetry.SpanKind.CLIENT if op == "retrieval" else telemetry.SpanKind.INTERNAL
         with telemetry.span(f"{op} {what}", kind, attrs) as span:
+            t0 = time.monotonic()
             value, failure, attempts = lk.fetch(service, call, schema, tracer)
+            telemetry.record_tool(time.monotonic() - t0, what, failure["kind"] if failure else None)
             span.set_attribute("refund_agent.attempts", attempts)
             if failure:
                 telemetry.fail(span, failure["kind"], failure["detail"])
@@ -357,6 +360,7 @@ class TracedGraph:
         try:
             name = "invoke_workflow refund_agent" + (" (resumed)" if resuming else "")
             with telemetry.span(name, attributes=attrs, links=links) as root:
+                t0 = time.monotonic()
                 TracedGraph.roots[thread] = otel_context.get_current()
                 try:
                     state = self.compiled.invoke(value, config, **kw)
@@ -371,6 +375,10 @@ class TracedGraph:
                     "refund_agent.guardrail_flags": sum(e["verdict"] == "flagged" for e in state.get("guardrails") or [])})
                 if state.get("failures"):
                     telemetry.fail(root, "lookup_failed", "; ".join(f"{f['service']} {f['kind']}" for f in state["failures"]))
+                telemetry.record_run(time.monotonic() - t0, "paused" if paused else d.get("action") or
+                                     ("handoff" if (state.get("reply") or {}).get("ticket") else None),
+                                     bool(state.get("failures")),
+                                     any(e["verdict"] == "flagged" for e in state.get("guardrails") or []))
                 return state
         finally:
             otel_context.detach(token)

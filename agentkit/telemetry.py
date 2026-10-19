@@ -78,19 +78,41 @@ class ViewerExporter(SpanExporter):
         self.http.close()
 
 
-def setup(exporters=None, service="refund-agent", environment=None, batch=True, sampler=None):
-    """Install a tracer provider once per process. Returns it (tests read its exporters)."""
-    global _provider
+def setup(exporters=None, service="refund-agent", environment=None, batch=True, sampler=None, otlp=None,
+          metric_interval_s=5):
+    """Install a tracer provider once per process. Returns it (tests read its exporters).
+
+    With `otlp` (a collector's base URL, e.g. http://127.0.0.1:4318; stage 10) spans go out as
+    OTLP over HTTP and a meter provider exports the GenAI metrics there every few seconds."""
+    global _provider, _meter_provider
     with _lock:
         if _provider is not None:
             return _provider
         resource = Resource.create({"service.name": service,
                                     "deployment.environment.name": environment or os.environ.get("AGENT_ENV", "dev")})
         _provider = TracerProvider(resource=resource, **({"sampler": sampler} if sampler else {}))
-        for exporter in exporters if exporters is not None else [ViewerExporter()]:
+        if exporters is None:
+            exporters = [] if otlp else [ViewerExporter()]
+        if otlp:
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+            exporters = [OTLPSpanExporter(endpoint=f"{otlp.rstrip('/')}/v1/traces"), *exporters]
+        for exporter in exporters:
             processor = BatchSpanProcessor(exporter, schedule_delay_millis=500) if batch else SimpleSpanProcessor(exporter)
             _provider.add_span_processor(processor)
         trace.set_tracer_provider(_provider)
+        if otlp:
+            from opentelemetry import metrics as otel_metrics
+            from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+            from opentelemetry.sdk.metrics import Counter as SdkCounter
+            from opentelemetry.sdk.metrics import Histogram as SdkHistogram
+            from opentelemetry.sdk.metrics import MeterProvider
+            from opentelemetry.sdk.metrics.export import AggregationTemporality, PeriodicExportingMetricReader
+            delta = {SdkHistogram: AggregationTemporality.DELTA, SdkCounter: AggregationTemporality.DELTA}
+            reader = PeriodicExportingMetricReader(
+                OTLPMetricExporter(endpoint=f"{otlp.rstrip('/')}/v1/metrics", preferred_temporality=delta),
+                export_interval_millis=metric_interval_s * 1000)
+            _meter_provider = MeterProvider(resource=resource, metric_readers=[reader], views=_views())
+            otel_metrics.set_meter_provider(_meter_provider)
         return _provider
 
 
@@ -104,6 +126,59 @@ def setup_in_memory():
 def flush():
     if _provider is not None:
         _provider.force_flush(5000)
+    if _meter_provider is not None:
+        _meter_provider.force_flush(5000)
+
+
+# --- metrics (stage 10) ------------------------------------------------------------------------
+# Names, units and buckets from the GenAI conventions (main, 2026-10-20). Note the renames still
+# unreleased in libraries: token usage is now counters per direction, and model-call time is
+# gen_ai.client.inference.duration (older docs: gen_ai.client.token.usage, gen_ai.client.operation.duration).
+SECONDS = [0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 40.96, 81.92]
+WORKFLOW = [1, 5, 10, 30, 60, 120, 300, 600, 1800, 3600, 7200]
+_meter_provider = None
+_instruments = {}
+
+
+def _views():
+    from opentelemetry.sdk.metrics.view import ExplicitBucketHistogramAggregation, View
+    return [View(instrument_name="gen_ai.invoke_workflow.duration", aggregation=ExplicitBucketHistogramAggregation(WORKFLOW)),
+            View(instrument_name="gen_ai.client.inference.duration", aggregation=ExplicitBucketHistogramAggregation(SECONDS)),
+            View(instrument_name="gen_ai.client.inference.time_to_first_chunk",
+                 aggregation=ExplicitBucketHistogramAggregation(SECONDS)),
+            View(instrument_name="gen_ai.execute_tool.duration", aggregation=ExplicitBucketHistogramAggregation(SECONDS))]
+
+
+def _instrument(kind, name, unit, description):
+    if name not in _instruments:
+        from opentelemetry import metrics as otel_metrics
+        meter = otel_metrics.get_meter(TRACER_NAME)
+        make = {"histogram": meter.create_histogram, "counter": meter.create_counter}[kind]
+        _instruments[name] = make(name, unit=unit, description=description)
+    return _instruments[name]
+
+
+def record_inference(seconds, model, response_model=None, error=None, ttft=None, input_tokens=0, output_tokens=0):
+    a = {"gen_ai.operation.name": "chat", "gen_ai.provider.name": PROVIDER, "gen_ai.request.model": model,
+         **({"gen_ai.response.model": response_model} if response_model else {}), **({"error.type": error} if error else {})}
+    _instrument("histogram", "gen_ai.client.inference.duration", "s", "Model call duration").record(seconds, a)
+    if ttft is not None:
+        _instrument("histogram", "gen_ai.client.inference.time_to_first_chunk", "s", "Time to first chunk").record(ttft, a)
+    if input_tokens:
+        _instrument("counter", "gen_ai.client.inference.usage.input_tokens", "{token}", "Input tokens").add(input_tokens, a)
+    if output_tokens:
+        _instrument("counter", "gen_ai.client.inference.usage.output_tokens", "{token}", "Output tokens").add(output_tokens, a)
+
+
+def record_tool(seconds, tool, error=None):
+    _instrument("histogram", "gen_ai.execute_tool.duration", "s", "Tool duration").record(
+        seconds, {"gen_ai.tool.name": tool, **({"error.type": error} if error else {})})
+
+
+def record_run(seconds, outcome, failed, flagged):
+    a = {"gen_ai.workflow.name": "refund_agent", "refund_agent.action": outcome or "none",
+         **({"error.type": "lookup_failed"} if failed else {}), "refund_agent.guardrail_flagged": bool(flagged)}
+    _instrument("histogram", "gen_ai.invoke_workflow.duration", "s", "Run duration").record(seconds, a)
 
 
 def tracer():

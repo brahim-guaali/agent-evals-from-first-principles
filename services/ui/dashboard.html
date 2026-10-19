@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent dashboard</title>
+<style>
+:root {
+  --bg: #f4f4f2; --surface: #fcfcfb; --surface-2: #f0efec; --border: #e1e0db; --grid: #e9e8e4;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #8a8984;
+  --s1: #2a78d6; --s2: #d9730d; --s3: #c2417a; --s4: #0f9d8a; --critical: #d03b3b; --good: #0ca30c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111110; --surface: #1a1a19; --surface-2: #232321; --border: #33332f; --grid: #2a2a27;
+    --text: #ffffff; --text-2: #c3c2b7; --muted: #8f8e86;
+    --s1: #4b93ea; --s2: #f08a2c; --s3: #e0609a; --s4: #2cb9a5;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111110; --surface: #1a1a19; --surface-2: #232321; --border: #33332f; --grid: #2a2a27;
+  --text: #ffffff; --text-2: #c3c2b7; --muted: #8f8e86; --s1: #4b93ea; --s2: #f08a2c; --s3: #e0609a; --s4: #2cb9a5;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+header { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface); flex-wrap: wrap; }
+header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+header a { color: var(--text-2); font-size: 13px; }
+header .clock { margin-left: auto; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+main { padding: 16px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; min-width: 0; }
+.card.wide { grid-column: 1 / -1; }
+.card h2 { font-size: 12px; margin: 0 0 8px; color: var(--text-2); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+.tiles { display: flex; flex-wrap: wrap; gap: 22px; }
+.tile .v { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile .l { font-size: 12px; color: var(--text-2); }
+svg { width: 100%; height: auto; display: block; overflow: visible; }
+svg text { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.legend { display: flex; gap: 12px; font-size: 12px; color: var(--text-2); margin-top: 4px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+.path { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; }
+.hop { flex: 1; min-width: 120px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; }
+.hop .n { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hop .l { font-size: 12px; color: var(--text-2); }
+.arrow { align-self: center; padding: 0 6px; color: var(--muted); font-size: 18px; }
+.empty { color: var(--text-2); padding: 12px 0; }
+body.replay header, body.replay .pathcard { display: none; }
+@media (max-width: 560px) { .arrow { display: none; } .hop { min-width: 45%; margin: 3px; } }
+</style>
+</head>
+<body>
+<header><h1>Refund agent · dashboard</h1><a href="/ui">live runs</a><a href="/ui/traces">traces</a><span class="clock" id="clock"></span></header>
+<main id="main">
+  <div class="card wide pathcard"><h2>Data path · spans and metric points at each hop</h2><div class="path" id="path"><div class="empty">Start the collector: make collector</div></div></div>
+  <div class="card wide"><div class="tiles" id="tiles"></div></div>
+  <div class="card"><h2>Run duration (s) · per minute</h2><div id="c-run"></div></div>
+  <div class="card"><h2>Model call duration (s)</h2><div id="c-model"></div></div>
+  <div class="card"><h2>Time to first chunk (s) · streamed replies</h2><div id="c-ttft"></div></div>
+  <div class="card"><h2>Tokens per minute</h2><div id="c-tokens"></div></div>
+  <div class="card"><h2>Runs per minute · and failed</h2><div id="c-runs"></div></div>
+  <div class="card"><h2>Tool duration p95 (s) · whole window</h2><div id="c-tools"></div></div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const COLORS = ["var(--s1)", "var(--s2)", "var(--s3)", "var(--s4)"];
+const WINDOW = 60;
+let data = {}, at = Infinity, t0 = null;
+
+async function series(name, extra = "") {
+  return (await fetch(`/metrics/series?name=${encodeURIComponent(name)}&window=${WINDOW}${extra}`)).json();
+}
+
+async function load() {
+  const [run, model, ttft, tin, tout, runsByErr, tools] = await Promise.all([
+    series("gen_ai.invoke_workflow.duration"), series("gen_ai.client.inference.duration"),
+    series("gen_ai.client.inference.time_to_first_chunk"), series("gen_ai.client.inference.usage.input_tokens"),
+    series("gen_ai.client.inference.usage.output_tokens"), series("gen_ai.invoke_workflow.duration", "&group_by=error.type"),
+    series("gen_ai.execute_tool.duration", `&window=86400&group_by=gen_ai.tool.name`)]);
+  data = {run, model, ttft, tin, tout, runsByErr, tools};
+  const all = [...run, ...model].map(r => r.t);
+  t0 = all.length ? Math.min(...all) : null;
+  window.replayEnd = all.length ? Math.max(...all) - t0 + WINDOW : 0;
+}
+
+function line(el, rows, keys, unit = "") {
+  rows = rows.filter(r => r.t <= at);
+  if (!rows.length) { el.innerHTML = `<div class="empty">No data yet.</div>`; return; }
+  const W = 520, H = 170, L = 40, B = 20, T = 8;
+  const xs = rows.map(r => r.t), x0 = t0 ?? Math.min(...xs), x1 = Math.max(x0 + WINDOW, Math.max(...xs) + WINDOW, at === Infinity ? 0 : at);
+  const ymax = Math.max(1e-9, ...rows.flatMap(r => keys.map(([k]) => r[k] ?? 0))) * 1.12;
+  const X = t => L + (t - x0) / Math.max(x1 - x0, 1) * (W - L - 6), Y = v => T + (1 - v / ymax) * (H - T - B);
+  const grid = [0, .5, 1].map(f => `<line x1="${L}" x2="${W}" y1="${Y(ymax * f)}" y2="${Y(ymax * f)}" stroke="var(--grid)"/>
+    <text x="${L - 6}" y="${Y(ymax * f) + 4}" text-anchor="end">${(ymax * f).toFixed(ymax < 3 ? 2 : 0)}</text>`).join("");
+  const ticks = [x0, (x0 + x1) / 2, x1].map(t => `<text x="${X(t)}" y="${H - 4}" text-anchor="middle">${Math.round((t - x0) / 60)} min</text>`).join("");
+  const paths = keys.map(([k, label], i) => {
+    const pts = rows.filter(r => r[k] != null).map(r => `${X(r.t + WINDOW / 2).toFixed(1)},${Y(r[k]).toFixed(1)}`);
+    const last = rows.filter(r => r[k] != null).slice(-1)[0];
+    return `<polyline fill="none" stroke="${COLORS[i]}" stroke-width="2" points="${pts.join(" ")}"/>` +
+      (last ? `<circle cx="${X(last.t + WINDOW / 2)}" cy="${Y(last[k])}" r="3" fill="${COLORS[i]}"/>` : "");
+  }).join("");
+  const lastRow = rows[rows.length - 1];
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}">${grid}${ticks}${paths}</svg>
+    <div class="legend">${keys.map(([k, label], i) => `<span><i style="background:${COLORS[i]}"></i>${label} ${lastRow[k] != null ? (+lastRow[k]).toFixed(lastRow[k] < 10 ? 2 : 0) + unit : ""}</span>`).join("")}</div>`;
+}
+
+function bars(el, rows) {
+  if (!rows.length) { el.innerHTML = `<div class="empty">No data yet.</div>`; return; }
+  rows = rows.filter(r => r.group !== "None").sort((a, b) => b.p95 - a.p95).slice(0, 8);
+  const max = Math.max(...rows.map(r => r.p95)) * 1.1;
+  el.innerHTML = `<svg viewBox="0 0 520 ${rows.length * 24 + 4}">${rows.map((r, i) => `
+    <text x="150" y="${i * 24 + 16}" text-anchor="end" style="fill:var(--text-2)">${esc(r.group)}</text>
+    <rect x="158" y="${i * 24 + 5}" width="${(r.p95 / max) * 300}" height="14" rx="3" fill="var(--s4)"/>
+    <text x="${162 + (r.p95 / max) * 300}" y="${i * 24 + 16}">${r.p95.toFixed(2)} s · ${r.count} calls</text>`).join("")}</svg>`;
+}
+
+function merge(a, b) { // tokens: input + output per window
+  const m = {};
+  a.forEach(r => (m[r.t] = {t: r.t, input: r.value, output: 0}));
+  b.forEach(r => (m[r.t] = {...(m[r.t] || {t: r.t, input: 0}), output: r.value}));
+  return Object.values(m).sort((x, y) => x.t - y.t);
+}
+
+function runsPerWindow(rows) {
+  const m = {};
+  rows.forEach(r => { const e = m[r.t] || (m[r.t] = {t: r.t, runs: 0, failed: 0}); e.runs += r.count; if (r.group !== "None") e.failed += r.count; });
+  return Object.values(m).sort((x, y) => x.t - y.t);
+}
+
+function draw() {
+  const absAt = at === Infinity ? Infinity : t0 + at;
+  const keep = rows => rows.filter(r => r.t <= absAt);
+  const save = at; at = absAt;
+  line($("#c-run"), data.run, [["p50", "p50"], ["p95", "p95"], ["p99", "p99"]], " s");
+  line($("#c-model"), data.model, [["p50", "p50"], ["p95", "p95"], ["p99", "p99"]], " s");
+  line($("#c-ttft"), data.ttft, [["p50", "p50"], ["p95", "p95"]], " s");
+  line($("#c-tokens"), merge(data.tin, data.tout), [["input", "input"], ["output", "output"]]);
+  line($("#c-runs"), runsPerWindow(data.runsByErr), [["runs", "runs"], ["failed", "failed"]]);
+  bars($("#c-tools"), data.tools);
+  const runs = keep(data.run), n = runs.reduce((s, r) => s + r.count, 0);
+  const failed = keep(data.runsByErr).filter(r => r.group !== "None").reduce((s, r) => s + r.count, 0);
+  const tokens = keep(data.tin).concat(keep(data.tout)).reduce((s, r) => s + r.value, 0);
+  const last = runs[runs.length - 1];
+  $("#tiles").innerHTML = [[n, "runs"], [last ? last.p95.toFixed(1) + " s" : "–", "run p95, last minute"],
+    [n ? (failed / n * 100).toFixed(1) + "%" : "–", "runs with a failed lookup"], [tokens.toLocaleString(), "tokens"]]
+    .map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+  $("#clock").textContent = t0 ? `${Math.round(((absAt === Infinity ? Date.now() / 1000 : absAt) - t0) / 60)} min of data` : "";
+  at = save;
+}
+
+async function path() {
+  const s = await (await fetch("/collector/stats")).json();
+  if (s.error) return;
+  const hop = (n, l) => `<div class="hop"><div class="n">${(n || 0).toLocaleString()}</div><div class="l">${l}</div></div>`;
+  $("#path").innerHTML = [hop(s["received.spans"], "spans received<br>(agent → OTLP)"), `<div class="arrow">→</div>`,
+    hop(s.batches, "batches<br>(batch processor)"), `<div class="arrow">→</div>`,
+    ...(s.processors || []).flatMap(p => [hop(s[`processor.${p}.dropped`], `dropped by ${p}`), `<div class="arrow">→</div>`]),
+    hop(s["exported.viewer"], "spans to the viewer"), hop(s["exported.file"], "spans to the archive"),
+    ...(s.forward || []).map(u => hop(s[`forwarded.${u}`], `forwarded to ${u.replace(/^https?:\/\//, "").split("/")[0]}`)),
+    hop(s["exported.points"], "metric points<br>to the dashboard")].join("");
+}
+
+const params = new URLSearchParams(location.search);
+if (params.get("replay")) {
+  document.body.classList.add("replay");
+  load().then(() => { at = 0; draw(); path(); window.seek = x => { at = x; draw(); }; window.ready = true; });
+} else {
+  const tick = async () => { await load(); draw(); path(); };
+  tick(); setInterval(tick, 5000);
+}
+</script>
+</body>
+</html>

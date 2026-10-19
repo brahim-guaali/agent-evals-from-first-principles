@@ -182,6 +182,12 @@ class Gemini:
             "refund_agent.model_used": model,
         })
 
+    def _metrics(self, response, seconds, model, ttft=None):
+        u = response.usage_metadata
+        telemetry.record_inference(seconds, self.models[0], getattr(response, "model_version", None) or model, ttft=ttft,
+                                   input_tokens=(u.prompt_token_count or 0) if u else 0,
+                                   output_tokens=((u.candidates_token_count or 0) + (u.thoughts_token_count or 0)) if u else 0)
+
     def _start(self, config, stream=False):
         """The CLIENT span of one model call: `chat {model}` (stage 09)."""
         attrs = {"gen_ai.operation.name": "chat", "gen_ai.provider.name": telemetry.PROVIDER,
@@ -202,6 +208,7 @@ class Gemini:
                 response = self.client.models.generate_content(model=model, contents=contents, config=config)
                 self.usage.add(response, time.monotonic() - t0, model)
                 self._response_attributes(span, response, model)
+                self._metrics(response, time.monotonic() - t0, model)
                 if telemetry.capture_content():
                     span.set_attribute("gen_ai.output.messages", _output(response))
                 return response
@@ -247,6 +254,7 @@ class Gemini:
             if final is not None and final.usage_metadata:
                 self.usage.add(final, time.monotonic() - t0, model)
                 self._response_attributes(span, final, model)
+                self._metrics(final, time.monotonic() - t0, model, ttft)
             telemetry.set_attributes(span, {"gen_ai.response.time_to_first_chunk": ttft, "refund_agent.chunks": chunks,
                                             "refund_agent.stream_aborted": aborted})
             if aborted:

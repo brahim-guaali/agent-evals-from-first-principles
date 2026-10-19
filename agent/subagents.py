@@ -68,11 +68,14 @@ class SubAgent:
                         "gen_ai.operation.name": "execute_tool", "gen_ai.tool.name": call.name,
                         "gen_ai.tool.type": "function", "gen_ai.tool.call.id": getattr(call, "id", None),
                         "gen_ai.agent.name": self.name, "gen_ai.tool.description": decl.description}) as tspan:
+                    t0 = time.monotonic()
                     try:
                         result = fn(platform, **args)
+                        telemetry.record_tool(time.monotonic() - t0, call.name)
                     except Exception as e:                  # a failing tool is information
                         result = {"error": f"{type(e).__name__}: {e}"}
                         telemetry.fail(tspan, type(e).__name__, str(e))
+                        telemetry.record_tool(time.monotonic() - t0, call.name, type(e).__name__)
                     if telemetry.capture_content():
                         telemetry.set_attributes(tspan, {"gen_ai.tool.call.arguments": args,
                                                          "gen_ai.tool.call.result": result})
