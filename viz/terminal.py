@@ -71,5 +71,6 @@ if __name__ == "__main__":
     ap.add_argument("out")
     ap.add_argument("--lines", help="1-based ranges, like 1-12,20-25")
     ap.add_argument("--title", default="real run")
+    ap.add_argument("--width", type=int, help="characters per line (default: the longest line)")
     a = ap.parse_args()
-    render(pick(Path(a.src).read_text(), a.lines), a.out, a.title)
+    render(pick(Path(a.src).read_text(), a.lines), a.out, a.title, width_chars=a.width)

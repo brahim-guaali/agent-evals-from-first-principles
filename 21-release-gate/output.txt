@@ -1,0 +1,13 @@
+$ python -m evals.gate   # on PR #1, threshold 3 → 5
+FAILED tests/test_01_memory.py::test_a_frequent_claimer_needs_a_manager_even_for_15_dollars - AssertionError: assert () == ('approval',)
+1 failed, 87 passed in 28.72s
+Golden traces: 2/2 ok
+Case set, scripted model: 17/18 FAILED
+- FAILED `frequent-claimer`: {'action': 'refund', 'amount': 15.0, 'approval': False}
+Gate: FAIL: this change makes the agent worse
+
+$ python -m evals.gate   # on PR #1, back to 3
+88 passed in 30.29s
+Golden traces: 2/2 ok
+Case set, scripted model: 18/18 ok
+Gate: PASS
