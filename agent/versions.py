@@ -39,7 +39,12 @@ def _git():
         return "unknown"
 
 
-def run_meta(environment=None):
-    p = {name: _h(text) for name, text in prompts().items()}
+def run_meta(environment=None, versions=None):
+    """`versions` (prompt name -> version, stage 16) swaps in that version's text before hashing."""
+    found = prompts()
+    if versions:
+        from agent.experiments import text
+        found |= {name: text(name, versions) for name in versions}
+    p = {name: _h(t) for name, t in found.items()}
     return {"agent": _git(), "prompt_set": _h("".join(f"{k}={v}" for k, v in sorted(p.items()))), "prompts": p,
             "environment": environment or os.environ.get("AGENT_ENV", "dev")}

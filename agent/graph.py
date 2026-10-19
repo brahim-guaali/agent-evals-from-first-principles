@@ -52,6 +52,8 @@ class RefundState(TypedDict, total=False):
     trace_carrier: dict                         # traceparent of the run that paused (stage 09)
     budget_stop: bool                           # the meter refused a call (stage 12)
     trace_root: dict                            # traceparent of the run's root span, for replays (stage 15)
+    prompt_versions: dict                       # prompt name -> version for this run (stage 16)
+    experiment: dict                            # {"name", "arm"} if the run is in an A/B test (stage 16)
     session: dict
     budget: Optional[float]
     claim: dict
@@ -244,8 +246,12 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
         """Stage 04: write the reply while the customer watches it appear."""
         sid, seq = session_of(s, config), iter(range(10_000))
         before = llm.usage.cost
+        system = None
+        if (s.get("prompt_versions") or {}).get("compose", "v1") != "v1":     # an experiment's arm (stage 16)
+            from agent.experiments import text
+            system = text("compose", s["prompt_versions"])
         out = judgments.compose(llm, s["request"]["message"], s["decision"],
-                                lambda piece: platform.push_chunk(sid, run_id(config), next(seq), piece))
+                                lambda piece: platform.push_chunk(sid, run_id(config), next(seq), piece), system)
         return out, llm.usage.cost - before
 
     def reply(s, config):
@@ -392,6 +398,10 @@ class TracedGraph:
                  "gen_ai.conversation.id": session, "refund_agent.run_id": thread, "refund_agent.resumed": resuming,
                  "refund_agent.customer": request.get("customer"), "refund_agent.prompt_set": meta.get("prompt_set"),
                  "refund_agent.agent_version": meta.get("agent")}
+        if not resuming:                           # an A/B arm and its prompt version (stage 16)
+            exp, versions = value.get("experiment") or {}, value.get("prompt_versions") or {}
+            attrs |= {"refund_agent.experiment": exp.get("name"), "refund_agent.arm": exp.get("arm"),
+                      "gen_ai.prompt.name": "compose" if versions else None, "gen_ai.prompt.version": versions.get("compose")}
         token = otel_context.attach(baggage.set_baggage("gen_ai.conversation.id", session))
         try:
             name = "invoke_workflow refund_agent" + (" (replay)" if replay else " (resumed)" if resuming else "")

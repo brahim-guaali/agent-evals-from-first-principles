@@ -67,10 +67,11 @@ plain words, then what happens next (when refunds or credit arrive). Warm, short
 no more than 90 words. Don't promise anything the decision doesn't say."""
 
 
-def compose(llm, message, decision, on_chunk):
-    """Stage 04: the customer reply, streamed piece by piece as the model writes it."""
+def compose(llm, message, decision, on_chunk, system=None):
+    """Stage 04: the customer reply, streamed piece by piece as the model writes it.
+    `system` lets an experiment pick another version of the prompt (stage 16)."""
     facts = {"customer_message": message, "decision": decision}
-    return llm.stream(COMPOSE, json.dumps(facts, ensure_ascii=False, indent=1), on_chunk)
+    return llm.stream(system or COMPOSE, json.dumps(facts, ensure_ascii=False, indent=1), on_chunk)
 
 
 def classify(llm, message, turns=None):

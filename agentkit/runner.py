@@ -15,7 +15,8 @@ from agentkit.llm import Gemini
 from agentkit.trace import Tracer
 
 
-def run_case(case, platform, stage, title=None, manager="approved", prefix="r", llm=None, meta=None, budget=None):
+def run_case(case, platform, stage, title=None, manager="approved", prefix="r", llm=None, meta=None, budget=None,
+             experiment=None):
     thread = f"{prefix}-" + uuid.uuid4().hex[:6]
     budget = budget if budget is not None else (float(os.environ["RUN_BUDGET_USD"]) if os.environ.get("RUN_BUDGET_USD") else None)
     llm = llm or Gemini(run_id=thread, budget=budget, customer=case.get("customer"))
@@ -25,7 +26,13 @@ def run_case(case, platform, stage, title=None, manager="approved", prefix="r", 
     tracer.start(spec(graph))
     config = {"configurable": {"thread_id": thread}}
     t0 = time.monotonic()
-    state = graph.invoke({"request": case, **({"meta": meta} if meta else {})}, config)
+    extra = {}
+    if experiment is not None:                    # an A/B arm, sticky per customer (stage 16)
+        from agent.versions import run_meta
+        arm, versions = experiment.versions_for(case.get("customer", thread))
+        extra = {"prompt_versions": versions, "experiment": {"name": experiment.name, "arm": arm},
+                 "meta": run_meta(versions=versions)}
+    state = graph.invoke({"request": case, **({"meta": meta} if meta else {}), **extra}, config)
     asked = bool(graph.get_state(config).next) and not state.get("budget_stop")
     if asked:
         platform.decide_approval(state["approval_request"]["id"], manager)

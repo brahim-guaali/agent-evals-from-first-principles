@@ -100,8 +100,9 @@ def plan(total, seed=7, repeat_rate=0.08, weights=None, pii_rate=0.0):
 
 class Replayer:
     def __init__(self, platform, stage, log_path, workers=3, rate_per_min=6.0, seed=7, fault_rate=0.0,
-                 llm_factory=None, ratings=False, environment=None):
+                 llm_factory=None, ratings=False, environment=None, experiment=None):
         self.llm_factory, self.ratings, self.environment = llm_factory, ratings, environment
+        self.experiment = experiment
         self.platform, self.stage, self.log_path = platform, stage, Path(log_path)
         self.workers, self.rate, self.rng, self.fault_rate = workers, rate_per_min, random.Random(seed), fault_rate
         self.q, self.lock, self.done = queue.Queue(), threading.Lock(), []
@@ -129,7 +130,8 @@ class Replayer:
                 r = run_case({"customer": req["customer"], "message": req["message"]}, self.platform,
                              self.stage, title=req["id"], prefix="t",
                              llm=self.llm_factory(req) if self.llm_factory else None,
-                             meta=run_meta(self.environment) if self.environment else None)
+                             meta=run_meta(self.environment) if self.environment and not self.experiment else None,
+                             experiment=self.experiment)
                 s, u = r["state"], r["usage"]
                 ins = [e for e in s.get("guardrails", []) if e["stage"] == "input"]
                 got = outcome(r)
@@ -142,7 +144,8 @@ class Replayer:
                     calls=u.calls, models=u.models, input_tokens=u.input_tokens, output_tokens=u.output_tokens,
                     cost=round(u.cost, 6), events=u.events,
                     ttft=(s.get("reply", {}).get("stream") or {}).get("ttft"),
-                    meta=s.get("meta"), model_versions=sorted(u.versions))
+                    meta=s.get("meta"), model_versions=sorted(u.versions),
+                    arm=(s.get("experiment") or {}).get("arm"))
                 if self.ratings:
                     rated = customers.rate(record)
                     if rated:
