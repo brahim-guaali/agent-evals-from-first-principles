@@ -1,0 +1,26 @@
+=== Deterministic checks on 75 archived real runs (stages 10-12) ===
+  46 of 75 runs joined to their record in a traffic log (for the spend check)
+
+  check                               pass  fail
+  spend_matches_record                   3    43
+  every_call_has_usage                  61     0
+  no_payment_after_a_failed_lookup       0     0   (didn't apply)
+  at_most_one_payment                   41     0
+  verify_loop_bounded                   51     0
+  within_latency_slo                    48    17
+  under_budget                          11     0
+  sub_agents_finished                    4     0
+  output_check_passed                   43     6
+
+  failures:
+    spend_matches_record             t-1b23a3: spans $0.000000 vs reported $0.000999
+    spend_matches_record             t-3a501b: spans $0.000000 vs reported $0.002122
+    within_latency_slo               t-3a501b: 93.8 s (objective 60 s)
+    spend_matches_record             t-f7bde5: spans $0.000000 vs reported $0.002094
+    within_latency_slo               t-f7bde5: 97.1 s (objective 60 s)
+    output_check_passed              t-30c7e5: ريال
+    output_check_passed              t-65780c: ريال
+    within_latency_slo               t-df9755: 69.2 s (objective 60 s)
+    output_check_passed              pv-00eb38: AED
+
+  328 evaluation results written into their traces (gen_ai.evaluation.result events); e.g. http://127.0.0.1:8710/ui/traces → trace ac1a57017289…

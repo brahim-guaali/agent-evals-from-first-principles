@@ -98,6 +98,7 @@ function colour(s) {
   if (op === "retrieval" || /memory/.test(op || "")) return "var(--memory)";
   if (op === "execute_tool") return "var(--tool)";
   if (n.startsWith("guardrail")) return "var(--guard)";
+  if (n.startsWith("evaluate")) return s.status === "ERROR" ? "var(--critical)" : "var(--good)";
   return "var(--node)";
 }
 const fmt = s => s < 1 ? `${Math.round(s * 1000)} ms` : `${s.toFixed(s < 10 ? 2 : 1)} s`;
@@ -130,18 +131,21 @@ function tree(spans) {
 
 function draw() {
   if (!current) return;
-  const spans = current.spans, t0 = Math.min(...spans.map(s => s.start)), t1 = Math.max(...spans.map(s => s.end));
+  // Evaluation results are written after the run (stage 18): scale to the run, pin them at its end.
+  const spans = current.spans, run = spans.filter(s => !s.name.startsWith("evaluate ")),
+        t0 = Math.min(...run.map(s => s.start)), t1 = Math.max(...run.map(s => s.end));
   const total = Math.max(t1 - t0, 0.001), at = replayAt === null ? Infinity : t0 + replayAt;
-  const visible = tree(spans).filter(s => s.start <= at);
+  const visible = tree(spans).filter(s => s.start <= at || (s.name.startsWith("evaluate ") && at === Infinity));
   const root = spans.find(s => !s.parent_id) || spans[0];
   const models = spans.filter(s => s.attributes["gen_ai.operation.name"] === "chat");
   const tokens = models.reduce((n, s) => n + (s.attributes["gen_ai.usage.input_tokens"] || 0) + (s.attributes["gen_ai.usage.output_tokens"] || 0), 0);
   const slowest = spans.filter(s => s.parent_id).sort((a, b) => (b.end - b.start) - (a.end - a.start))[0];
-  const errors = spans.filter(s => s.status === "ERROR").length;
+  const errors = run.filter(s => s.status === "ERROR").length;
   const ticks = [0, .25, .5, .75, 1].map(f => `<span style="left:${f * 100}%">${fmt(total * f)}</span>`).join("");
   $("#main").innerHTML = `
   <div class="card"><div class="tiles">
     <div class="tile"><div class="v">${fmt(total)}</div><div class="l">${esc(root.name)}</div></div>
+    ${spans.some(s => s.name.startsWith("evaluate ")) ? `<div class="tile"><div class="v">${spans.filter(s => s.name.startsWith("evaluate ") && s.status !== "ERROR").length}/${spans.filter(s => s.name.startsWith("evaluate ")).length}</div><div class="l">evaluations passed</div></div>` : ""}
     <div class="tile"><div class="v">${spans.length}</div><div class="l">spans</div></div>
     <div class="tile"><div class="v">${models.length}</div><div class="l">model calls · ${tokens.toLocaleString()} tokens</div></div>
     <div class="tile"><div class="v">${slowest ? fmt(slowest.end - slowest.start) : "–"}</div><div class="l">slowest: ${esc(slowest?.name)}</div></div>
@@ -150,7 +154,9 @@ function draw() {
   <div class="card"><h2>Waterfall</h2>
     <div class="axis"><div></div><div class="ticks">${ticks}</div></div>
     <div class="wf">${visible.map(s => {
-      const end = Math.min(s.end, at), left = (s.start - t0) / total * 100, width = Math.max((end - s.start) / total * 100, .2);
+      const isEval = s.name.startsWith("evaluate ");
+      const end = Math.min(s.end, at), left = isEval ? 98.5 : (s.start - t0) / total * 100,
+            width = isEval ? 1.5 : Math.max((end - s.start) / total * 100, .2);
       const evs = s.events.filter(e => e.t <= at).map(e => `<div class="ev ${/429|error|fail|flag|rate|exhaust|invalid/i.test(e.name) ? "" : "ok"}" title="${esc(e.name)}" style="left:${(e.t - s.start) / Math.max(s.end - s.start, .001) * 100}%"></div>`).join("");
       return `<div class="row ${selected === s.span_id ? "sel" : ""}" data-id="${s.span_id}">
         <div class="name" style="padding-left:${s.depth * 14}px" title="${esc(s.name)}">${esc(s.name)}</div>
@@ -181,7 +187,7 @@ if (params.get("replay")) {
     window.ready = true;
   });
 } else {
-  loadList();
+  loadList().then(() => { if (params.get("trace")) open(params.get("trace")); });
   const es = new EventSource("/spans/stream");
   es.onmessage = e => { const d = JSON.parse(e.data); if (current && d.trace_id === current.trace_id) open(current.trace_id); else loadList(); };
 }

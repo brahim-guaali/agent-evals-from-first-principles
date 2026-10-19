@@ -26,7 +26,7 @@ dev = ["pytest>=8"]
 viz = ["matplotlib>=3.8", "pillow>=10"]
 
 [tool.setuptools]
-packages = ["agent", "agentkit", "services"]
+packages = ["agent", "agentkit", "evals", "services"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

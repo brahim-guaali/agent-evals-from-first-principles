@@ -838,12 +838,12 @@ def compare_traces(a: str, b: str):
 
 
 @app.post("/admin/restore")
-def restore_from_archive(path: str, trace_id: str = ""):
+def restore_from_archive(path: str, trace_id: str = "", skip_prefix: str = ""):
     """Load spans back from the collector's JSONL archive (cold) into the viewer (hot)."""
     loaded = []
     for line in Path(path).read_text().splitlines():
         x = json.loads(line)
-        if not trace_id or x["trace_id"] == trace_id:
+        if (not trace_id or x["trace_id"] == trace_id) and not (skip_prefix and x["name"].startswith(skip_prefix)):
             loaded.append(x)
     with _lock, db() as conn:
         conn.executemany("insert or replace into spans values (?,?,?,?,?,?,?,?)",

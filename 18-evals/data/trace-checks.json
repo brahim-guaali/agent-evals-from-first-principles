@@ -1,0 +1,1689 @@
+{
+ "ac1a57017289347e071a6ce48247c7e2": {
+  "run_id": "t-1b23a3",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000999"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "21.1 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "7da7bc85a5b4947a4122bb5dc85fad9c": {
+  "run_id": "t-3a501b",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.002122"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "6/6 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "93.8 s (objective 60 s)"
+   },
+   "sub_agents_finished": {
+    "passed": true,
+    "explanation": "1/1 sub-agents returned a result"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "617dd1540db3c25da8cb0762cea5804e": {
+  "run_id": "t-f7bde5",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.002094"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "6/6 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "97.1 s (objective 60 s)"
+   },
+   "sub_agents_finished": {
+    "passed": true,
+    "explanation": "1/1 sub-agents returned a result"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "22e83d283c6f8ee05c5628c619442782": {
+  "run_id": "t-9f62ad",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000902"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "36.7 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "4341fb59a9fb8ca8ccc3c940abf92e73": {
+  "run_id": "t-b9bfec",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001089"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   }
+  }
+ },
+ "922ad2e77b560047592097c972d08e1f": {
+  "run_id": "t-b9bfec",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001089"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "16.8 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "1db1cc5dbae3fe6e05081f6160f77d4d": {
+  "run_id": "t-30c7e5",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000981"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "59.1 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": false,
+    "explanation": "\u0631\u064a\u0627\u0644"
+   }
+  }
+ },
+ "2d8fc45a23359cee2014850d9b96e281": {
+  "run_id": "t-39d5a1",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000913"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "45.1 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "80126b3de28861e78e9b81cf0118c96c": {
+  "run_id": "t-ed2d85",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001002"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "37.7 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "f4dec3c301ebef3f35a3471cd9ead4fe": {
+  "run_id": "t-65780c",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001001"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "38.1 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": false,
+    "explanation": "\u0631\u064a\u0627\u0644"
+   }
+  }
+ },
+ "8b92d83ccd62d1e219d804ff5f1400af": {
+  "run_id": "t-37203e",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000916"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   }
+  }
+ },
+ "a7d0f23c757e4010d5cc572e44a0e143": {
+  "run_id": "t-af523b",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000971"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "42.0 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "dd52edaf949f330058d2be3979465e59": {
+  "run_id": "t-37203e",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000916"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "14.7 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "0d4287afe75b7cf9e8f9b3e7e6c8f403": {
+  "run_id": "t-df9755",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001901"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "6/6 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "69.2 s (objective 60 s)"
+   },
+   "sub_agents_finished": {
+    "passed": true,
+    "explanation": "1/1 sub-agents returned a result"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "a27e395ee22b51a5db361248761fb981": {
+  "run_id": "t-5f06cd",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000921"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   }
+  }
+ },
+ "f35a7c76a16ceade66a4ff077a26b0f0": {
+  "run_id": "t-80895c",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000909"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "28.4 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "96db17782f75b2e3bdfc82478be26bc8": {
+  "run_id": "t-5f06cd",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000921"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "13.4 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "5e5910dcf57f520296b61684bffe1ec6": {
+  "run_id": "t-7f56a8",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000969"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "44.8 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "7b89f5d3bb9716131d6a4efbeef85c9e": {
+  "run_id": "t-9c5bd6",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000973"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   }
+  }
+ },
+ "1df20fce4879dd7406fff244ec453ad5": {
+  "run_id": "t-0788c2",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000926"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "36.0 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "85760729193b9bd2a7f17ba3d639e4c4": {
+  "run_id": "t-9c5bd6",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000973"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "10.8 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "bdce719ce2f9ed49b2505ba8401c4006": {
+  "run_id": "t-94b16a",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001048"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "45.5 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "a31ec7ec1a95b93cd65c0deb8ead26aa": {
+  "run_id": "t-826d15",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000956"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   }
+  }
+ },
+ "7c9fba80af3a986cfd5ac44d03706df4": {
+  "run_id": "t-df6c62",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000912"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "46.0 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "f8dde44d28dd915f25e5218b66f88fd4": {
+  "run_id": "t-f75fb0",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001131"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   }
+  }
+ },
+ "e910c1e77c22c21bb733f7a6d1299149": {
+  "run_id": "t-826d15",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000956"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "14.7 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "8a445d482c5893f48ea36e8c00b0f23f": {
+  "run_id": "t-f75fb0",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001131"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "5.5 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "74a1469801f73efa7f09478847d0de86": {
+  "run_id": "t-538fca",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000939"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "15.8 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "0ce97cb3d6ef62ece84a0b27dc0a0787": {
+  "run_id": "t-4e23fc",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001826"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "6/6 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "58.5 s (objective 60 s)"
+   },
+   "sub_agents_finished": {
+    "passed": true,
+    "explanation": "1/1 sub-agents returned a result"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "bda7b14dcb6f0bfaa73fb14362015fff": {
+  "run_id": "t-1f5773",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000964"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   }
+  }
+ },
+ "bcf4de31d418f0bb3e5246c52e7de2ad": {
+  "run_id": "t-3e3dd9",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000947"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "38.7 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "402ac259f8c2c46f5faa23db1f0f538a": {
+  "run_id": "t-1f5773",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000964"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "14.5 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "e9b51b26701ea7597ff879034e500952": {
+  "run_id": "t-894585",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001008"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "4/4 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "30.8 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "5ed1f8bd1bb24ba326f18c3f5cbc9a48": {
+  "run_id": "t-f361d7",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.001050"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "4/4 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "34.1 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "6c2c3ff49b52cb3022d01b88d556dada": {
+  "run_id": "t-a7cd4e",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000938"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "30.9 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "620110d68c934583c8afd97fd6fe6884": {
+  "run_id": "t-ef2080",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000999"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "4/4 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "48.0 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "845d9b6baa8f2325d242507b484b93a7": {
+  "run_id": "t-38f197",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000000 vs reported $0.000927"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "12.1 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "5e112e12a21146131f7a3a31ee4e6623": {
+  "run_id": "pv-8fa5d8",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "18.5 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "6d497c03b13ddaab32adaa63b4304f97": {
+  "run_id": "pv-38d84a",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "16.8 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "3c85f9fbd02a1be282f7355c2c4f068b": {
+  "run_id": "pv-be8e75",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "12.1 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "601ebaa7d1d29f8c36a0f3031964a282": {
+  "run_id": "pv-00eb38",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "16.9 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": false,
+    "explanation": "AED"
+   }
+  }
+ },
+ "8f4233de5bb8eb084495cd68d53b3365": {
+  "run_id": "pv-43dd06",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "17.4 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": false,
+    "explanation": "AED"
+   }
+  }
+ },
+ "bd1a07a90e259b86d5675ec7074bf967": {
+  "run_id": "pv-f88a3f",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "12.3 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "bd296a5f003d92b9a71cf3f7f9714436": {
+  "run_id": "pv-e8b743",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "13.8 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "3f9c6902d51b89babcbffd425d4d7f95": {
+  "run_id": "pv-590c78",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "13.4 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": false,
+    "explanation": "AED"
+   }
+  }
+ },
+ "d1eec6b4c361e31a91b25f3eaaab9ceb": {
+  "run_id": "pv-17231d",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "13.6 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "0f924fc260020d9d20f26aea4515a88c": {
+  "run_id": "pv-53a5e5",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "15.5 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "8a4f3b77373356441e3098838ad1bf1b": {
+  "run_id": "pv-571dfe",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "11.1 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": false,
+    "explanation": "AED"
+   }
+  }
+ },
+ "8e03bf49f59798cecae0480a458fa19e": {
+  "run_id": "pv-109029",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "15.9 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "056db4cdcc385885e109eaca460b69dc": {
+  "run_id": "pv-c88195",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "20.9 s (objective 60 s)"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "3cd66cc442cfb567713bf86f4eb4ada1": {
+  "run_id": "cost-b88256",
+  "checks": {
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "0.1 s (objective 60 s)"
+   }
+  }
+ },
+ "1aaa3a38fd2d1ba83e935a8a8cc6c73f": {
+  "run_id": "cost-990948",
+  "checks": {
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "4.9 s (objective 60 s)"
+   }
+  }
+ },
+ "5bf17f85118abf4cc1e857d9ff9d8b92": {
+  "run_id": "t-7b5edb",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000431 vs reported $0.000656"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00043 of $0.003"
+   }
+  }
+ },
+ "b0f76eb9eb7ea00b913b34b784626f25": {
+  "run_id": "t-faddb3",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000417 vs reported $0.000613"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00042 of $0.003"
+   }
+  }
+ },
+ "514774ab7e40404adfc028c1223a9cb6": {
+  "run_id": "t-654e7a",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000498 vs reported $0.000716"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "2/2 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00050 of $0.003"
+   }
+  }
+ },
+ "e5fec24330db621554d8fc4f9557ea17": {
+  "run_id": "t-7b5edb",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000225 vs reported $0.000656"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "14.8 s (objective 60 s)"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00022 of $0.003"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "079deb8eb23a14aba6fe8c821b111edb": {
+  "run_id": "t-faddb3",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000197 vs reported $0.000613"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "27.3 s (objective 60 s)"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00020 of $0.003"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "c73a6eee7b430996d205c7fc908e69a7": {
+  "run_id": "t-654e7a",
+  "checks": {
+   "spend_matches_record": {
+    "passed": false,
+    "explanation": "spans $0.000218 vs reported $0.000716"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "15.1 s (objective 60 s)"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00022 of $0.003"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "9bbc19dc88e01889e3ffe14d0b1ac9fb": {
+  "run_id": "t-0d3829",
+  "checks": {
+   "spend_matches_record": {
+    "passed": true,
+    "explanation": "spans $0.000709 vs reported $0.000709"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "47.2 s (objective 60 s)"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00071 of $0.003"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "3cf226ac5489c94fc21dda8c10d98fc6": {
+  "run_id": "t-7cfccc",
+  "checks": {
+   "spend_matches_record": {
+    "passed": true,
+    "explanation": "spans $0.000703 vs reported $0.000703"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "4/4 model calls with token usage"
+   },
+   "at_most_one_payment": {
+    "passed": true,
+    "explanation": "1 payment calls"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "54.7 s (objective 60 s)"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00070 of $0.003"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "9c9f40c172a3de6bd4ab2f19aa36b212": {
+  "run_id": "t-3fd2de",
+  "checks": {
+   "spend_matches_record": {
+    "passed": true,
+    "explanation": "spans $0.000600 vs reported $0.000600"
+   },
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "3/3 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": true,
+    "explanation": "37.7 s (objective 60 s)"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00060 of $0.003"
+   },
+   "output_check_passed": {
+    "passed": true,
+    "explanation": "pass"
+   }
+  }
+ },
+ "7a23cbb034902afc8d6ef4946377187e": {
+  "run_id": "t-9dedb5",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "116.8 s (objective 60 s)"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00010 of $0.003"
+   }
+  }
+ },
+ "bdd776e11bdb9af9bb5bfa8e75308f2e": {
+  "run_id": "t-135a1a",
+  "checks": {
+   "every_call_has_usage": {
+    "passed": true,
+    "explanation": "1/1 model calls with token usage"
+   },
+   "verify_loop_bounded": {
+    "passed": true,
+    "explanation": "decide ran 1 times"
+   },
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "103.8 s (objective 60 s)"
+   },
+   "under_budget": {
+    "passed": true,
+    "explanation": "$0.00009 of $0.003"
+   }
+  }
+ },
+ "6244f25b07ceb28bb0f1e12f298692e4": {
+  "run_id": "t-74d669",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "88.9 s (objective 60 s)"
+   }
+  }
+ },
+ "2e36feec1647e36909f019d154c4b0d3": {
+  "run_id": "t-c23d2f",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "90.0 s (objective 60 s)"
+   }
+  }
+ },
+ "2e2d0bfc73f52134d0f1ac902af7a0ac": {
+  "run_id": "t-82c601",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "90.0 s (objective 60 s)"
+   }
+  }
+ },
+ "9c5b60616514f15f4ed751561f78da1e": {
+  "run_id": "t-a0a4e9",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "90.0 s (objective 60 s)"
+   }
+  }
+ },
+ "2bc2e1f884c70d3fd08beaafd76db682": {
+  "run_id": "t-80fe9d",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "90.0 s (objective 60 s)"
+   }
+  }
+ },
+ "3a54b1f405a1c6d6d8b8a28150d07623": {
+  "run_id": "t-b5f873",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "90.0 s (objective 60 s)"
+   }
+  }
+ },
+ "3bb158b1729e6e43f7fe78bb49a06943": {
+  "run_id": "t-6a430c",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "90.0 s (objective 60 s)"
+   }
+  }
+ },
+ "f1c3006787f7a64c7c320d5c16f2b5ac": {
+  "run_id": "t-56f57b",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "89.9 s (objective 60 s)"
+   }
+  }
+ },
+ "7bdcabdc0ff389cf1ded73f3b8bbe266": {
+  "run_id": "t-02a512",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "90.0 s (objective 60 s)"
+   }
+  }
+ },
+ "8d79e5c2b533551bcdb72731b80b2d5f": {
+  "run_id": "t-abe87f",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "90.0 s (objective 60 s)"
+   }
+  }
+ },
+ "df5801a72467af662fe63af250c2db61": {
+  "run_id": "t-1a589d",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "64.9 s (objective 60 s)"
+   }
+  }
+ },
+ "037d2cb82c8ac2a1ad2beda942cbda8b": {
+  "run_id": "t-aa13b8",
+  "checks": {
+   "within_latency_slo": {
+    "passed": false,
+    "explanation": "65.0 s (objective 60 s)"
+   }
+  }
+ }
+}
