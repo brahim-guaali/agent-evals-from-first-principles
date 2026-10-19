@@ -55,6 +55,11 @@ def db():
         create table if not exists turns (
             id integer primary key autoincrement, session_id text, customer text, role text,
             text text, run_id text, created_at text);
+        create table if not exists queue (
+            item_id text primary key, run_id text, trace_id text, reason text, snapshot text, created_at text);
+        create table if not exists labels (
+            item_id text, annotator text, labels text, notes text, created_at text,
+            primary key (item_id, annotator));
         create table if not exists points (
             id integer primary key autoincrement, name text, kind text, t real, start real,
             environment text, attributes text, count integer, sum real, bounds text, buckets text, value real);
@@ -850,6 +855,91 @@ def restore_from_archive(path: str, trace_id: str = ""):
 @app.get("/ui/compare", response_class=HTMLResponse)
 def compare_ui():
     return COMPARE_UI.read_text()
+
+
+# --- the annotation queue (stage 17) ----------------------------------------------------------
+ANNOTATE_UI = Path(__file__).resolve().parent / "ui" / "annotate.html"
+
+# The questions every label answers, like a score config in Langfuse or Phoenix.
+LABEL_SCHEMA = {
+    "decision_correct": {"type": "bool", "question": "Is the decision what the policy requires for these facts?"},
+    "reply_grounded": {"type": "bool", "question": "Does the reply say only things the facts and the policy support?"},
+    "amount_currency_right": {"type": "bool", "question": "Are the amount and the currency in the reply right?"},
+    "tone": {"type": "choice", "options": ["good", "ok", "bad"], "question": "How does the reply read to the customer?"},
+}
+
+
+class QueueItem(BaseModel):
+    run_id: str
+    trace_id: str | None = None
+    reason: str                       # why it was queued: sample, flagged, low rating, judge disagreement…
+    snapshot: dict                    # what the annotator sees, frozen when the run ended
+
+
+@app.post("/annotations/queue")
+def enqueue(items: list[QueueItem]):
+    with _lock, db() as conn:
+        for it in items:
+            conn.execute("insert or replace into queue values (?,?,?,?,?,?)",
+                         ("q_" + it.run_id, it.run_id, it.trace_id, it.reason, json.dumps(it.snapshot, ensure_ascii=False), now()))
+    return {"queued": len(items)}
+
+
+@app.get("/annotations/schema")
+def label_schema():
+    return LABEL_SCHEMA
+
+
+@app.get("/annotations/next")
+def next_item(annotator: str = "brahim"):
+    """The oldest item this annotator hasn't labelled yet, and how many are left."""
+    with db() as conn:
+        rows = conn.execute("select q.* from queue q where not exists (select 1 from labels l where l.item_id = q.item_id "
+                            "and l.annotator = ?) order by q.created_at, q.item_id", (annotator,)).fetchall()
+        done = conn.execute("select count(*) from labels where annotator = ?", (annotator,)).fetchone()[0]
+    if not rows:
+        return {"item": None, "left": 0, "done": done}
+    r = dict(rows[0])
+    r["snapshot"] = json.loads(r["snapshot"])
+    return {"item": r, "left": len(rows), "done": done}
+
+
+class Label(BaseModel):
+    item_id: str
+    annotator: str = "brahim"
+    labels: dict
+    notes: str = ""
+
+
+@app.post("/annotations/labels")
+def add_label(lb: Label):
+    for k, v in lb.labels.items():
+        spec = LABEL_SCHEMA.get(k)
+        if spec is None:
+            raise HTTPException(422, f"unknown label {k}")
+        if spec["type"] == "bool" and not isinstance(v, bool):
+            raise HTTPException(422, f"{k} must be true or false")
+        if spec["type"] == "choice" and v not in spec["options"]:
+            raise HTTPException(422, f"{k} must be one of {spec['options']}")
+    with _lock, db() as conn:
+        conn.execute("insert or replace into labels values (?,?,?,?,?)",
+                     (lb.item_id, lb.annotator, json.dumps(lb.labels), lb.notes, now()))
+    return {"ok": True}
+
+
+@app.get("/annotations/export")
+def export_labels(annotator: str = ""):
+    """Every labelled item with its snapshot: the dataset stages 18-20 evaluate against."""
+    with db() as conn:
+        q = ("select q.*, l.annotator, l.labels, l.notes, l.created_at labelled_at from queue q join labels l "
+             "on l.item_id = q.item_id") + (" where l.annotator = ?" if annotator else "")
+        rows = conn.execute(q, (annotator,) if annotator else ()).fetchall()
+    return [{**dict(r), "snapshot": json.loads(r["snapshot"]), "labels": json.loads(r["labels"])} for r in rows]
+
+
+@app.get("/ui/annotate", response_class=HTMLResponse)
+def annotate_ui():
+    return ANNOTATE_UI.read_text()
 
 
 # /traces/{trace_id} would swallow /traces/search and /traces/compare: match it last.
