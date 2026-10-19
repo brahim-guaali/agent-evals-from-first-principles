@@ -25,6 +25,7 @@ jobs:
       - name: test suite (no API key)
         run: python -m pytest -q
       - name: release gate
+        if: success() || failure()          # show the gate's verdict even when a unit test already failed
         run: python -m evals.gate
 
   live:

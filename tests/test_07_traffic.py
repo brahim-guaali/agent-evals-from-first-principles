@@ -42,7 +42,7 @@ def test_two_runs_for_one_order_at_the_same_moment_pay_once(platform, tmp_path):
     """Found by the first traffic batch: a repeat sent seconds after the first request."""
     import threading
     from agent.graph import build
-    p = Platform(platform)
+    p = Platform(platform, timeout=15)          # CI runners are slower; a lookup timeout isn't what this tests
     grill = next(c for c in CASES if c["id"] == "late-grill")
     states = {}
 
@@ -53,5 +53,6 @@ def test_two_runs_for_one_order_at_the_same_moment_pay_once(platform, tmp_path):
     [t.start() for t in threads]
     [t.join() for t in threads]
     assert p.payments("A-9310")["count"] == 1
+    assert not any(s.get("failures") for s in states.values()), [s.get("failures") for s in states.values()]
     assert sorted(s["payment"]["replayed"] for s in states.values()) == [False, True]
     assert any("already been refunded" in s["reply"]["text"] for s in states.values())
