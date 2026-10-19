@@ -23,7 +23,7 @@ make platform
 GEMINI_RPM=12 python 08-signals/run.py 40          # traffic with ratings, environment "staging"
 ```
 
-## Real run (gemini-3.5-flash-lite, 2026-10-20)
+## Real run (gemini-3.1-flash-lite, 2026-10-20)
 
 40 requests in staging, 4 a minute, 3 workers ([`data/`](data/)):
 
