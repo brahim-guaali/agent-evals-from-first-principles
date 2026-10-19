@@ -18,6 +18,10 @@ flowchart LR
 
 - **The agent speaks OTLP**, the OpenTelemetry protocol, with the standard exporters (`opentelemetry-exporter-otlp-proto-http`). It no longer knows who receives its spans.
 - **A collector sits in between** ([`services/collector.py`](../services/collector.py)): it receives OTLP, decodes the protobuf, batches (every second or 200 spans), runs processors, and fans out to exporters, so one destination failing doesn't stop the others. It counts every hop (`GET /stats`). We wrote a small one to see what it does; in production you'd run the OpenTelemetry Collector (`otelcol-contrib`), whose tail-sampling processor doesn't exist in the SDKs at all (stage 13).
+![The data path, counted as stage 10's batch played](data-path.gif)
+
+*Stage 10's real batch, 1,045 spans over 11 minutes: each span leaves the SDK when it ends (its real end time, from the collector's archive), crosses in the SDK's next 0.5 s batch and reaches the viewer and archive in the collector's next 1 s batch: the batch settings this stage used. The counters end at the collector's own totals (1,045 / 1,045 / 1,045; 472 metric points). Drawn with [`viz/data_path.py`](../viz/data_path.py).*
+
 - **Metrics travel next to the spans.** The agent records the GenAI metrics with the names, units and bucket boundaries from the conventions:
 
 | Metric | Type | What it is |
