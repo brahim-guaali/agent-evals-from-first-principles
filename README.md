@@ -5,6 +5,42 @@ A course in runnable code. We take a real refund agent from a food-delivery app,
 - **Observability is the camera:** every model call, tool call and memory read leaves a span with its timing, tokens and cost, so you can see what a run did and what it spent.
 - **Evals are the referee:** checks in code, a model acting as judge, and people decide whether a run was good enough, and a release gate ships only what passes.
 
+![A refund run's trace being born, from a real run](09-spans/spans-born.gif)
+
+*A grey-zone refund from a real run, replayed from its recorded spans: 43 spans in 96 seconds, the fraud-review sub-agent in orange, a quota fallback and two 503s marked in red on the first model call. Every image in this repo comes from a recorded run, and its caption says how it was made.*
+
+## The target
+
+```mermaid
+flowchart LR
+    subgraph agent[refund agent · LangGraph]
+      S[session · guard] --> C[classify] --> L[order · policy · fraud · history] --> D[decide · verify] --> P[refund · streamed reply]
+      L -. grey zone .-> FR[[fraud_review]]
+      C -. follow-up .-> EX[explain] -.-> PE[[policy_expert]]
+    end
+    agent -- "OTel GenAI spans + metrics (OTLP)" --> COL[collector<br>batch · redact · tail-sample]
+    COL --> V[viewer · traces] & A[archive] & DB[dashboard · SLOs · drift alerts]
+    COL -.-> PH[Phoenix] & LF[Langfuse]
+    agent -- "model + paid tool calls" --> M[metering proxy<br>budget per run]
+    V --> E[evals from traces<br>online + offline]
+    E --> J[LLM judge<br>calibrated on a person's labels]
+    E --> G[release gate<br>GitHub Actions]
+```
+
+## What the real runs found
+
+| | |
+|---|---|
+| A 14/14 run on a model nobody configured | Gemini 3.5 Flash's free tier is 20 requests a day; every call fell back to Flash-Lite after 429s, silently (stage 01) |
+| Model time to first token 0.6 s, the customer's 15.6 s | the reply is the last step (stage 04) |
+| A reply in riyals for a dollar refund | caught by the output guardrail (stage 06), counted by the evals (stage 18) |
+| A customer refunded twice | traffic: two runs for one order at the same moment; one idempotency key per order now (stage 07) |
+| Run p50 45 s, customer wait p50 6.6 min | the queue, not the agent (stage 07) |
+| A fifth of every run spent waiting for our own rate limiter | spans (stage 09) |
+| Head sampling kept 4 of 47 failed runs, tail sampling all 47 | and a rate from tail-sampled traces said 26% for a true 4.7% (stage 13) |
+| The silent model switch caught by a drift alert in 7 minutes | the latency SLO never fired while customers queued 14 minutes (stage 14) |
+| A well-meant PR going red | the release gate, 17/18 (stage 21) |
+
 The agent comes from [graph engineering from first principles](https://github.com/brahim-guaali/graph-engineering-from-first-principles), where it was built step by step from a naive loop into a LangGraph graph. Everything is real: Gemini (free tier) with real tool calls and structured output, a real HTTP platform (orders, refund policy, fraud scoring, payments with idempotency keys, manager approvals), SQLite, and a test suite. Every stage README ends with real-run numbers and **where it breaks**.
 
 ## The stages
