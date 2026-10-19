@@ -50,3 +50,12 @@ def test_results_land_in_the_judged_trace_as_genai_evaluation_events(spans):
 
 def test_every_check_is_listed():
     assert len(checks.CHECKS) == 9
+
+
+def test_the_gates_oracle_has_an_answer_for_every_case():
+    from agentkit.cases import CASES
+    from evals.gate import oracle
+    for c in CASES:
+        answer, fraud = oracle(c)
+        d = answer("Decision", "")
+        assert d["action"] in ("refund", "credit", "refuse") and fraud

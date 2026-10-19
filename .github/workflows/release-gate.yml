@@ -1,0 +1,49 @@
+# The release gate (stage 21): a change that makes the agent worse doesn't merge.
+name: release gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  gate:
+    name: tests, golden traces, case set (scripted model)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -q -e '.[dev]'
+      - name: test suite (no API key)
+        run: python -m pytest -q
+      - name: release gate
+        run: python -m evals.gate
+
+  live:
+    name: case set and curated cases (real model)
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -q -e '.[dev]'
+      - name: live gate (skipped without the GEMINI_API_KEY secret)
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then echo "No GEMINI_API_KEY secret: the live gate is skipped." >> "$GITHUB_STEP_SUMMARY"; exit 0; fi
+          python -m uvicorn services.app:app --port 8710 &
+          sleep 3
+          python -m evals.gate --live

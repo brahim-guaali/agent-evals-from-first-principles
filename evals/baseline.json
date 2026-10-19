@@ -1,0 +1,2 @@
+{"min_correct": 18, "max_cost_per_run": 0.002, "max_seconds": 60, "max_slow": 4,
+ "_note": "From the last accepted live run (stage 06: 18/18). Raise it when the agent gets better; never lower it to pass."}

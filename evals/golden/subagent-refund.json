@@ -1,0 +1,962 @@
+[
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "55e28e3f46e1f1fd",
+"parent_id": "f167c20b93ab963f",
+"name": "GET /sessions/{id}",
+"kind": "CLIENT",
+"start": 1792449840.99226,
+"end": 1792449840.994261,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "GET",
+"url.template": "/sessions/{id}",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "6f25ab3eea39465c",
+"parent_id": "f167c20b93ab963f",
+"name": "POST /sessions/{id}/turns",
+"kind": "CLIENT",
+"start": 1792449840.994336,
+"end": 1792449840.9963431,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "POST",
+"url.template": "/sessions/{id}/turns",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "f167c20b93ab963f",
+"parent_id": "718df96083f28094",
+"name": "node session",
+"kind": "INTERNAL",
+"start": 1792449840.99086,
+"end": 1792449840.996361,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "session",
+"langgraph.step": 1
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "5ea4c6934365c667",
+"parent_id": "f0b3d08292be62d5",
+"name": "guardrail prompt_injection",
+"kind": "INTERNAL",
+"start": 1792449840.996804,
+"end": 1792449840.9968388,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"guardrail.stage": "input",
+"guardrail.verdict": "pass",
+"guardrail.by": "rules",
+"guardrail.evidence": []
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "f0b3d08292be62d5",
+"parent_id": "718df96083f28094",
+"name": "node guard",
+"kind": "INTERNAL",
+"start": 1792449840.9967701,
+"end": 1792449840.9968462,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "guard",
+"langgraph.step": 2
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "23abbdf9300939ce",
+"parent_id": "69b7bbcc904cc355",
+"name": "chat gemini-3.5-flash-lite",
+"kind": "CLIENT",
+"start": 1792449840.9976928,
+"end": 1792449845.1519759,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "chat",
+"gen_ai.provider.name": "gcp.gen_ai",
+"gen_ai.request.model": "gemini-3.5-flash-lite",
+"gen_ai.request.temperature": 0.0,
+"gen_ai.conversation.id": "t-4e23fc",
+"server.address": "generativelanguage.googleapis.com",
+"gen_ai.response.model": "gemini-3.1-flash-lite",
+"gen_ai.response.id": "MZ3WatqYOIztxs0P25eU4Qo",
+"gen_ai.response.finish_reasons": [
+"STOP"
+],
+"gen_ai.usage.input_tokens": 139,
+"gen_ai.usage.output_tokens": 50,
+"refund_agent.model_used": "gemini-3.1-flash-lite"
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "69b7bbcc904cc355",
+"parent_id": "718df96083f28094",
+"name": "node classify",
+"kind": "INTERNAL",
+"start": 1792449840.997601,
+"end": 1792449845.152106,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "classify",
+"langgraph.step": 3
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "fd4da61a8cc659fb",
+"parent_id": "7f293128631cdebd",
+"name": "GET /orders/{id}",
+"kind": "CLIENT",
+"start": 1792449845.1551301,
+"end": 1792449847.1695292,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "GET",
+"url.template": "/orders/{id}",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "7f293128631cdebd",
+"parent_id": "91a853196612ab78",
+"name": "execute_tool get_order",
+"kind": "INTERNAL",
+"start": 1792449845.15502,
+"end": 1792449847.1698,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "execute_tool",
+"gen_ai.conversation.id": "t-4e23fc",
+"gen_ai.tool.name": "get_order",
+"gen_ai.tool.type": "function",
+"refund_agent.attempts": 1
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "91a853196612ab78",
+"parent_id": "718df96083f28094",
+"name": "node order",
+"kind": "INTERNAL",
+"start": 1792449845.154892,
+"end": 1792449847.169825,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "order",
+"langgraph.step": 4
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "7481dbcb1997657c",
+"parent_id": "63ef5913bf8e6beb",
+"name": "GET /policy",
+"kind": "CLIENT",
+"start": 1792449845.1569998,
+"end": 1792449847.171821,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "GET",
+"url.template": "/policy",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "63ef5913bf8e6beb",
+"parent_id": "03ffcbf4af64b938",
+"name": "execute_tool get_policy",
+"kind": "INTERNAL",
+"start": 1792449845.1569338,
+"end": 1792449847.171961,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "execute_tool",
+"gen_ai.conversation.id": "t-4e23fc",
+"gen_ai.tool.name": "get_policy",
+"gen_ai.tool.type": "function",
+"refund_agent.attempts": 1
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "03ffcbf4af64b938",
+"parent_id": "718df96083f28094",
+"name": "node policy",
+"kind": "INTERNAL",
+"start": 1792449845.1568582,
+"end": 1792449847.171983,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "policy",
+"langgraph.step": 4
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "85bc8357b705e513",
+"parent_id": "25459dc5c6c585a7",
+"name": "GET /fraud/{id}",
+"kind": "CLIENT",
+"start": 1792449845.1578538,
+"end": 1792449847.1727219,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "GET",
+"url.template": "/fraud/{id}",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "25459dc5c6c585a7",
+"parent_id": "6ffbad0c81e5c963",
+"name": "execute_tool get_fraud_score",
+"kind": "INTERNAL",
+"start": 1792449845.157778,
+"end": 1792449847.172823,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "execute_tool",
+"gen_ai.conversation.id": "t-4e23fc",
+"gen_ai.tool.name": "get_fraud_score",
+"gen_ai.tool.type": "function",
+"refund_agent.attempts": 1
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "6ffbad0c81e5c963",
+"parent_id": "718df96083f28094",
+"name": "node fraud",
+"kind": "INTERNAL",
+"start": 1792449845.157695,
+"end": 1792449847.1728482,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "fraud",
+"langgraph.step": 4
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "62e12db975b6d661",
+"parent_id": "878131e985521316",
+"name": "GET /customers/{id}/history",
+"kind": "CLIENT",
+"start": 1792449845.156142,
+"end": 1792449847.1732428,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "GET",
+"url.template": "/customers/{id}/history",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "878131e985521316",
+"parent_id": "0904d7d9b778cd1e",
+"name": "retrieval customer_history",
+"kind": "CLIENT",
+"start": 1792449845.156074,
+"end": 1792449847.173323,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "retrieval",
+"gen_ai.conversation.id": "t-4e23fc",
+"gen_ai.data_source.id": "customer_history",
+"refund_agent.attempts": 1
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "0904d7d9b778cd1e",
+"parent_id": "718df96083f28094",
+"name": "node history",
+"kind": "INTERNAL",
+"start": 1792449845.155997,
+"end": 1792449847.173337,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "history",
+"langgraph.step": 4
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "fff8b2c56c8eb7c2",
+"parent_id": "718df96083f28094",
+"name": "node screen",
+"kind": "INTERNAL",
+"start": 1792449847.174577,
+"end": 1792449847.174595,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "screen",
+"langgraph.step": 5
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "83e6c3a116f3bc83",
+"parent_id": "30bc327726f26a99",
+"name": "chat gemini-3.5-flash-lite",
+"kind": "CLIENT",
+"start": 1792449847.17645,
+"end": 1792449849.0997708,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "chat",
+"gen_ai.provider.name": "gcp.gen_ai",
+"gen_ai.request.model": "gemini-3.5-flash-lite",
+"gen_ai.request.temperature": 0.0,
+"gen_ai.conversation.id": "t-4e23fc",
+"server.address": "generativelanguage.googleapis.com",
+"gen_ai.response.model": "gemini-3.1-flash-lite",
+"gen_ai.response.id": "N53WasGlFJ-a28oPmZDM0Qc",
+"gen_ai.response.finish_reasons": [
+"STOP"
+],
+"gen_ai.usage.input_tokens": 382,
+"gen_ai.usage.output_tokens": 52,
+"refund_agent.model_used": "gemini-3.1-flash-lite"
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "65fcdce7fe12a483",
+"parent_id": "c40b3b9b511bfc95",
+"name": "GET /customers/{id}/devices",
+"kind": "CLIENT",
+"start": 1792449849.100461,
+"end": 1792449851.107538,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "GET",
+"url.template": "/customers/{id}/devices",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "c40b3b9b511bfc95",
+"parent_id": "30bc327726f26a99",
+"name": "execute_tool get_devices",
+"kind": "INTERNAL",
+"start": 1792449849.1003032,
+"end": 1792449851.107971,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "execute_tool",
+"gen_ai.tool.name": "get_devices",
+"gen_ai.tool.type": "function",
+"gen_ai.tool.call.id": "call_197154",
+"gen_ai.agent.name": "fraud_review",
+"gen_ai.tool.description": "Devices the customer used and other accounts on them."
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "8937390d5899d7b4",
+"parent_id": "7d8f103352ef3c8d",
+"name": "GET /customers/{id}/history",
+"kind": "CLIENT",
+"start": 1792449851.109024,
+"end": 1792449853.12078,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "GET",
+"url.template": "/customers/{id}/history",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "7d8f103352ef3c8d",
+"parent_id": "30bc327726f26a99",
+"name": "execute_tool get_history",
+"kind": "INTERNAL",
+"start": 1792449851.108866,
+"end": 1792449853.120998,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "execute_tool",
+"gen_ai.tool.name": "get_history",
+"gen_ai.tool.type": "function",
+"gen_ai.tool.call.id": "call_197155",
+"gen_ai.agent.name": "fraud_review",
+"gen_ai.tool.description": "The customer's past refunds and notes."
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "9dc8db48d3bd59a2",
+"parent_id": "30bc327726f26a99",
+"name": "chat gemini-3.5-flash-lite",
+"kind": "CLIENT",
+"start": 1792449853.121772,
+"end": 1792449855.959899,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "chat",
+"gen_ai.provider.name": "gcp.gen_ai",
+"gen_ai.request.model": "gemini-3.5-flash-lite",
+"gen_ai.request.temperature": 0.0,
+"gen_ai.conversation.id": "t-4e23fc",
+"server.address": "generativelanguage.googleapis.com",
+"gen_ai.response.model": "gemini-3.1-flash-lite",
+"gen_ai.response.id": "PZ3WauidEq2BvdIPvabkkAc",
+"gen_ai.response.finish_reasons": [
+"STOP"
+],
+"gen_ai.usage.input_tokens": 570,
+"gen_ai.usage.output_tokens": 23,
+"refund_agent.model_used": "gemini-3.1-flash-lite"
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "bffb7c526c7c6862",
+"parent_id": "4baee8a1df4f7b68",
+"name": "GET /fraud/{id}",
+"kind": "CLIENT",
+"start": 1792449855.960193,
+"end": 1792449857.966105,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "GET",
+"url.template": "/fraud/{id}",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "4baee8a1df4f7b68",
+"parent_id": "30bc327726f26a99",
+"name": "execute_tool get_fraud_score",
+"kind": "INTERNAL",
+"start": 1792449855.960119,
+"end": 1792449857.96653,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "execute_tool",
+"gen_ai.tool.name": "get_fraud_score",
+"gen_ai.tool.type": "function",
+"gen_ai.tool.call.id": "call_227203",
+"gen_ai.agent.name": "fraud_review",
+"gen_ai.tool.description": "Fraud score and signals of any account."
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "60f4b101d50e17b9",
+"parent_id": "30bc327726f26a99",
+"name": "chat gemini-3.5-flash-lite",
+"kind": "CLIENT",
+"start": 1792449857.9679549,
+"end": 1792449869.479009,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "chat",
+"gen_ai.provider.name": "gcp.gen_ai",
+"gen_ai.request.model": "gemini-3.5-flash-lite",
+"gen_ai.request.temperature": 0.0,
+"gen_ai.conversation.id": "t-4e23fc",
+"server.address": "generativelanguage.googleapis.com",
+"rate_limiter.wait_s": 10.15,
+"gen_ai.response.model": "gemini-3.1-flash-lite",
+"gen_ai.response.id": "TJ3WaqyBH6X6xN8PrrGkiQI",
+"gen_ai.response.finish_reasons": [
+"STOP"
+],
+"gen_ai.usage.input_tokens": 644,
+"gen_ai.usage.output_tokens": 94,
+"refund_agent.model_used": "gemini-3.1-flash-lite"
+},
+"events": [
+{
+"name": "rate_limiter.wait",
+"t": 1792449868.1322072,
+"attributes": {
+"seconds": 10.15
+}
+}
+],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "30bc327726f26a99",
+"parent_id": "356d22f6d4778c39",
+"name": "invoke_agent fraud_review",
+"kind": "INTERNAL",
+"start": 1792449847.176088,
+"end": 1792449869.47931,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "invoke_agent",
+"gen_ai.agent.name": "fraud_review",
+"gen_ai.agent.description": "Investigates a refund when the fraud score is in the grey zone (0.4 to 0.7).",
+"gen_ai.conversation.id": "t-4e23fc",
+"refund_agent.handoff.from": "refund_agent",
+"refund_agent.handoff.steps": 3,
+"refund_agent.handoff.result": "{\"risk\": \"low\", \"evidence\": [\"Customer has no history of refunds.\", \"The device is shared only with account C-4456, which is in the same household and has a low fraud score (0.08).\", \"The customer's own fraud score is 0.47, which is moderate and not indicative of high risk given the lack of negative history.\"]}"
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "356d22f6d4778c39",
+"parent_id": "718df96083f28094",
+"name": "node fraud_review",
+"kind": "INTERNAL",
+"start": 1792449847.175979,
+"end": 1792449869.479341,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "fraud_review",
+"langgraph.step": 6
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "8a45314fb57e1ab2",
+"parent_id": "adf83f0f8c4c51b2",
+"name": "chat gemini-3.5-flash-lite",
+"kind": "CLIENT",
+"start": 1792449869.481496,
+"end": 1792449886.089144,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "chat",
+"gen_ai.provider.name": "gcp.gen_ai",
+"gen_ai.request.model": "gemini-3.5-flash-lite",
+"gen_ai.request.temperature": 0.0,
+"gen_ai.conversation.id": "t-4e23fc",
+"server.address": "generativelanguage.googleapis.com",
+"rate_limiter.wait_s": 13.64,
+"gen_ai.response.model": "gemini-3.1-flash-lite",
+"gen_ai.response.id": "XJ3WatzkB-rSxN8P8viamQo",
+"gen_ai.response.finish_reasons": [
+"STOP"
+],
+"gen_ai.usage.input_tokens": 800,
+"gen_ai.usage.output_tokens": 90,
+"refund_agent.model_used": "gemini-3.1-flash-lite"
+},
+"events": [
+{
+"name": "rate_limiter.wait",
+"t": 1792449883.123873,
+"attributes": {
+"seconds": 13.64
+}
+}
+],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "adf83f0f8c4c51b2",
+"parent_id": "718df96083f28094",
+"name": "node decide",
+"kind": "INTERNAL",
+"start": 1792449869.481098,
+"end": 1792449886.0892391,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "decide",
+"langgraph.step": 7
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "abc30f43288164aa",
+"parent_id": "718df96083f28094",
+"name": "node verify",
+"kind": "INTERNAL",
+"start": 1792449886.090604,
+"end": 1792449886.0906382,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "verify",
+"langgraph.step": 8
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "a45d30076565c29c",
+"parent_id": "cdf43281a83f752d",
+"name": "POST /payments",
+"kind": "CLIENT",
+"start": 1792449886.091648,
+"end": 1792449886.0960152,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "POST",
+"url.template": "/payments",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "cdf43281a83f752d",
+"parent_id": "718df96083f28094",
+"name": "node refund",
+"kind": "INTERNAL",
+"start": 1792449886.0915468,
+"end": 1792449886.096041,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "refund",
+"langgraph.step": 9
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "0c9688698f00bb5a",
+"parent_id": "3d1bb987562ed91c",
+"name": "chat gemini-3.5-flash-lite",
+"kind": "CLIENT",
+"start": 1792449886.097383,
+"end": 1792449899.452956,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "chat",
+"gen_ai.provider.name": "gcp.gen_ai",
+"gen_ai.request.model": "gemini-3.5-flash-lite",
+"gen_ai.request.temperature": 0.3,
+"gen_ai.request.stream": true,
+"gen_ai.conversation.id": "t-4e23fc",
+"server.address": "generativelanguage.googleapis.com",
+"rate_limiter.wait_s": 12.02,
+"gen_ai.response.model": "gemini-3.1-flash-lite",
+"gen_ai.response.id": "ap3WapGHHN6JxN8P1Ifr8QY",
+"gen_ai.response.finish_reasons": [
+"STOP"
+],
+"gen_ai.usage.input_tokens": 220,
+"gen_ai.usage.output_tokens": 91,
+"refund_agent.model_used": "gemini-3.1-flash-lite",
+"gen_ai.response.time_to_first_chunk": 1.1148169169900939,
+"refund_agent.chunks": 5,
+"refund_agent.stream_aborted": false
+},
+"events": [
+{
+"name": "rate_limiter.wait",
+"t": 1792449898.132322,
+"attributes": {
+"seconds": 12.02
+}
+}
+],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "314ae122f77d9194",
+"parent_id": "3d1bb987562ed91c",
+"name": "POST /customers/{id}/notes",
+"kind": "CLIENT",
+"start": 1792449899.453212,
+"end": 1792449899.456901,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "POST",
+"url.template": "/customers/{id}/notes",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "6288f380f728f518",
+"parent_id": "3d1bb987562ed91c",
+"name": "POST /sessions/{id}/turns",
+"kind": "CLIENT",
+"start": 1792449899.457014,
+"end": 1792449899.459751,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "POST",
+"url.template": "/sessions/{id}/turns",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "beef6bf46d0cf007",
+"parent_id": "3d1bb987562ed91c",
+"name": "POST /notifications",
+"kind": "CLIENT",
+"start": 1792449899.459851,
+"end": 1792449899.461927,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"http.request.method": "POST",
+"url.template": "/notifications",
+"server.address": "127.0.0.1",
+"server.port": 8710,
+"http.response.status_code": 200
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "86519a7feab03ace",
+"parent_id": "3d1bb987562ed91c",
+"name": "guardrail output_facts",
+"kind": "INTERNAL",
+"start": 1792449899.462006,
+"end": 1792449899.462081,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"guardrail.stage": "output",
+"guardrail.verdict": "pass",
+"guardrail.checks": [],
+"guardrail.evidence": []
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "3d1bb987562ed91c",
+"parent_id": "718df96083f28094",
+"name": "node reply",
+"kind": "INTERNAL",
+"start": 1792449886.097153,
+"end": 1792449899.462091,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"langgraph.node": "reply",
+"langgraph.step": 10
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+},
+{
+"trace_id": "0ce97cb3d6ef62ece84a0b27dc0a0787",
+"span_id": "718df96083f28094",
+"parent_id": null,
+"name": "invoke_workflow refund_agent",
+"kind": "INTERNAL",
+"start": 1792449840.989025,
+"end": 1792449899.4639711,
+"status": "UNSET",
+"status_message": "",
+"attributes": {
+"gen_ai.operation.name": "invoke_workflow",
+"gen_ai.workflow.name": "refund_agent",
+"gen_ai.conversation.id": "t-4e23fc",
+"refund_agent.run_id": "t-4e23fc",
+"refund_agent.resumed": false,
+"refund_agent.customer": "C-4455-0023",
+"refund_agent.prompt_set": "944bc7f7",
+"refund_agent.agent_version": "2e9d243-dirty",
+"refund_agent.paused": false,
+"refund_agent.action": "refund",
+"refund_agent.amount": 11.0,
+"refund_agent.clause": "§2",
+"refund_agent.failures": 0,
+"refund_agent.guardrail_flags": 0
+},
+"events": [],
+"links": [],
+"scope": "refund-agent"
+}
+]
