@@ -51,6 +51,7 @@ class RefundState(TypedDict, total=False):
     meta: dict                                  # prompt set, agent commit, environment (stage 08)
     trace_carrier: dict                         # traceparent of the run that paused (stage 09)
     budget_stop: bool                           # the meter refused a call (stage 12)
+    trace_root: dict                            # traceparent of the run's root span, for replays (stage 15)
     session: dict
     budget: Optional[float]
     claim: dict
@@ -362,14 +363,30 @@ class TracedGraph:
         return {**state, "budget_stop": True,
                 "reply": {"text": text, "queue": "support-escalations", "why": "run budget exceeded"}}
 
+    def replay(self, config, before, patch=None, as_node=None, why="replayed from checkpoint"):
+        """Debugging (stage 15): run again from the last checkpoint before node `before`, with
+        today's code and an optional patch to the state, as a new trace linked to the original.
+        Side effects stay safe: the refund's idempotency key is per order, so a replay that
+        reaches the payment gets `replayed` back instead of paying twice."""
+        target = next((h for h in self.compiled.get_state_history(config) if before in (h.next or ())), None)
+        if target is None:
+            raise ValueError(f"no checkpoint before {before} for {config['configurable']['thread_id']}")
+        fork = self.compiled.update_state(target.config, patch, as_node=as_node) if patch else target.config
+        original = target.values.get("trace_root") or {}
+        return self.invoke(None, fork, _replay=(original, f"{why}: from before {before}"))
+
     def invoke(self, value, config, **kw):
         from opentelemetry import baggage
         from opentelemetry import context as otel_context
+        replay = kw.pop("_replay", None)
         thread = config["configurable"]["thread_id"]
         resuming = not isinstance(value, dict)
         request = (self.compiled.get_state(config).values.get("request") if resuming else value.get("request")) or {}
         session = request.get("session_id") or thread
-        links = telemetry.resume_link(self.compiled.get_state(config).values.get("trace_carrier") or {}) if resuming else []
+        if replay:
+            links = telemetry.resume_link(replay[0], replay[1])
+        else:
+            links = telemetry.resume_link(self.compiled.get_state(config).values.get("trace_carrier") or {}) if resuming else []
         meta = (value.get("meta") if not resuming else None) or {}
         attrs = {"gen_ai.operation.name": "invoke_workflow", "gen_ai.workflow.name": "refund_agent",
                  "gen_ai.conversation.id": session, "refund_agent.run_id": thread, "refund_agent.resumed": resuming,
@@ -377,10 +394,12 @@ class TracedGraph:
                  "refund_agent.agent_version": meta.get("agent")}
         token = otel_context.attach(baggage.set_baggage("gen_ai.conversation.id", session))
         try:
-            name = "invoke_workflow refund_agent" + (" (resumed)" if resuming else "")
-            with telemetry.span(name, attributes=attrs, links=links) as root:
+            name = "invoke_workflow refund_agent" + (" (replay)" if replay else " (resumed)" if resuming else "")
+            with telemetry.span(name, attributes={**attrs, "refund_agent.replay": bool(replay)}, links=links) as root:
                 t0 = time.monotonic()
                 TracedGraph.roots[thread] = otel_context.get_current()
+                if not resuming:
+                    value = {**value, "trace_root": telemetry.carrier()}
                 try:
                     state = self.compiled.invoke(value, config, **kw)
                 except BudgetExceeded as e:             # the meter stopped the run (stage 12)

@@ -270,10 +270,10 @@ def carrier():
     return c
 
 
-def resume_link(stored):
-    """A link to the span that paused, from its stored traceparent."""
+def resume_link(stored, reason="resumed after waiting for the operations manager"):
+    """A link to a span from its stored traceparent (a paused run, or the run being replayed)."""
     ctx = trace.get_current_span(TraceContextTextMapPropagator().extract(stored)).get_span_context()
-    return [Link(ctx, {"link.reason": "resumed after waiting for the operations manager"})] if ctx.is_valid else []
+    return [Link(ctx, {"link.reason": reason})] if ctx.is_valid else []
 
 
 def ids(s):

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compare runs</title>
+<style>
+:root {
+  --bg: #f4f4f2; --surface: #fcfcfb; --surface-2: #f0efec; --border: #e1e0db;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #8a8984; --a: #2a78d6; --b: #d9730d; --critical: #d03b3b; --good: #0ca30c;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111110; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
+    --text: #ffffff; --text-2: #c3c2b7; --muted: #8f8e86; --a: #4b93ea; --b: #f08a2c;
+  }
+}
+:root[data-theme="dark"] { --bg: #111110; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
+  --text: #ffffff; --text-2: #c3c2b7; --muted: #8f8e86; --a: #4b93ea; --b: #f08a2c; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+header { display: flex; gap: 14px; align-items: center; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+header h1 { font-size: 15px; margin: 0; }
+header a { color: var(--text-2); font-size: 13px; }
+main { padding: 16px; display: grid; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; overflow-x: auto; }
+.tiles { display: flex; gap: 26px; flex-wrap: wrap; }
+.tile .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile .l { font-size: 12px; color: var(--text-2); }
+.key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 12px; vertical-align: -1px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; }
+td { padding: 3px 8px 3px 0; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 12.5px; }
+td.p { font-family: var(--mono); white-space: nowrap; max-width: 380px; overflow: hidden; text-overflow: ellipsis; }
+.bars { width: 260px; }
+.bar { height: 7px; border-radius: 3px; margin: 2px 0; min-width: 1px; }
+.d { font-family: var(--mono); font-size: 11.5px; color: var(--text-2); }
+.d b { color: var(--text); font-weight: 600; }
+.missing { color: var(--muted); font-style: italic; }
+.err { color: var(--critical); }
+</style>
+</head>
+<body>
+<header><h1>Compare two runs</h1><a href="/ui/traces">traces</a><a href="/ui/dashboard">dashboard</a>
+  <span class="key"><i style="background:var(--a)"></i>A <i style="background:var(--b)"></i>B</span></header>
+<main id="main"><div class="card">Open as /ui/compare?a=&lt;trace id&gt;&amp;b=&lt;trace id&gt;</div></main>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const fmt = s => s == null ? "–" : s < 1 ? `${Math.round(s * 1000)} ms` : `${s.toFixed(s < 10 ? 2 : 1)} s`;
+const p = new URLSearchParams(location.search);
+if (p.get("a") && p.get("b")) fetch(`/traces/compare?a=${p.get("a")}&b=${p.get("b")}`).then(r => r.json()).then(c => {
+  const max = Math.max(...c.rows.map(r => Math.max(r.a || 0, r.b || 0)), 0.001);
+  const changed = c.rows.filter(r => Object.keys(r.diffs).length || r.a == null || r.b == null).length;
+  document.getElementById("main").innerHTML = `
+  <div class="card"><div class="tiles">
+    <div class="tile"><div class="v">${fmt(c.duration[0])} → ${fmt(c.duration[1])}</div><div class="l">run duration A → B</div></div>
+    <div class="tile"><div class="v">$${c.cost[0].toFixed(5)} → $${c.cost[1].toFixed(5)}</div><div class="l">model cost A → B</div></div>
+    <div class="tile"><div class="v">${changed}</div><div class="l">spans that differ or exist on one side only</div></div>
+  </div></div>
+  <div class="card"><table>${c.rows.map(r => `<tr>
+    <td class="p" title="${esc(r.path)}" style="padding-left:${(r.path.split("/").length - 1) * 12}px">${esc(r.path.split("/").pop())}</td>
+    <td class="bars">${r.a != null ? `<div class="bar" style="width:${r.a / max * 100}%;background:var(--a)"></div>` : `<div class="missing">not in A</div>`}
+      ${r.b != null ? `<div class="bar" style="width:${r.b / max * 100}%;background:var(--b)"></div>` : `<div class="missing">not in B</div>`}</td>
+    <td class="d">${fmt(r.a)} → ${fmt(r.b)}${r.status.includes("ERROR") ? ` <span class="err">${r.status.join(" → ")}</span>` : ""}</td>
+    <td class="d">${Object.entries(r.diffs).map(([k, v]) => `${esc(k.split(".").pop())}: <b>${esc(JSON.stringify(v[0]))}</b> → <b>${esc(JSON.stringify(v[1]))}</b>`).join("<br>")}</td>
+  </tr>`).join("")}</table></div>`;
+});
+</script>
+</body>
+</html>

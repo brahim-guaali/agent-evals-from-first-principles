@@ -742,3 +742,118 @@ def get_alerts():
 def clear_alerts():
     _alerts.clear()
     return {"ok": True}
+
+
+# --- debugging: search, compare, restore (stage 15) -------------------------------------------
+COMPARE_UI = Path(__file__).resolve().parent / "ui" / "compare.html"
+
+
+def _trace_spans(conn, trace_id):
+    return [json.loads(r["body"]) for r in conn.execute("select body from spans where trace_id = ? order by start",
+                                                        (trace_id,))]
+
+
+@app.get("/traces/search")
+def search_traces(status: str = "", min_s: float = 0, max_s: float = 1e9, q: str = "", attr: str = "",
+                  limit: int = 50, sort: str = "recent"):
+    """Find runs: by error status, duration, a word in any span name or attribute, or an exact
+    attribute on any span (attr=guardrail.verdict=flagged)."""
+    key, _, want = attr.partition("=")
+    out = []
+    with db() as conn:
+        ids = [r["trace_id"] for r in conn.execute("select distinct trace_id from spans")]
+        for t in ids:
+            spans = _trace_spans(conn, t)
+            root = next((x for x in spans if not x["parent_id"]), None)
+            if root is None:
+                continue
+            dur = root["end"] - root["start"]
+            if not (min_s <= dur <= max_s):
+                continue
+            if status and not any(x["status"] == status for x in spans):
+                continue
+            if key and not any(str(x["attributes"].get(key)) == want for x in spans):
+                continue
+            if q and q.lower() not in json.dumps(spans, ensure_ascii=False).lower():
+                continue
+            a = root["attributes"]
+            out.append({"trace_id": t, "run_id": a.get("refund_agent.run_id"), "root": root["name"], "duration": dur,
+                        "start": root["start"], "action": a.get("refund_agent.action"), "amount": a.get("refund_agent.amount"),
+                        "errors": sum(x["status"] == "ERROR" for x in spans), "spans": len(spans),
+                        "prompt_set": a.get("refund_agent.prompt_set")})
+    key_fn = {"recent": lambda r: -r["start"], "slowest": lambda r: -r["duration"]}[sort]
+    return sorted(out, key=key_fn)[:limit]
+
+
+def _paths(spans):
+    """Each span's place in its tree, by names: 'node reply/chat gemini…#2' for the 2nd such child."""
+    by_id = {x["span_id"]: x for x in spans}
+    out, seen = {}, {}
+    for x in sorted(spans, key=lambda x: x["start"]):
+        parts, cur, visited = [], x, set()
+        while cur and cur["span_id"] not in visited:       # a broken parent chain must not loop forever
+            visited.add(cur["span_id"])
+            parts.append(cur["name"].replace(" (resumed)", "").replace(" (replay)", ""))
+            cur = by_id.get(cur["parent_id"])
+        path = "/".join(reversed(parts))
+        seen[path] = seen.get(path, 0) + 1
+        out[path + (f"#{seen[path]}" if seen[path] > 1 else "")] = x
+    return out
+
+
+DIFF_KEYS = ("gen_ai.response.model", "gen_ai.usage.input_tokens", "gen_ai.usage.output_tokens", "gen_ai.usage.cost",
+             "refund_agent.action", "refund_agent.amount", "refund_agent.clause", "guardrail.verdict", "guardrail.checks",
+             "gen_ai.response.time_to_first_chunk", "refund_agent.prompt_set", "error.type")
+
+
+@app.get("/traces/compare")
+def compare_traces(a: str, b: str):
+    """Two runs side by side, span by span: durations, and what changed in the attributes that matter."""
+    with db() as conn:
+        sa, sb = _trace_spans(conn, a), _trace_spans(conn, b)
+    if not sa or not sb:
+        raise HTTPException(404, "both traces must exist")
+    pa, pb = _paths(sa), _paths(sb)
+    rows = []
+    for path in sorted(set(pa) | set(pb), key=lambda p: min((pa.get(p) or pb.get(p))["start"] - (sa if p in pa else sb)[0]["start"], 1e9)):
+        x, y = pa.get(path), pb.get(path)
+        diffs = {}
+        for k in DIFF_KEYS:
+            va, vb = (x or {}).get("attributes", {}).get(k), (y or {}).get("attributes", {}).get(k)
+            if va != vb and (va is not None or vb is not None):
+                diffs[k] = [va, vb]
+        rows.append({"path": path, "a": (x["end"] - x["start"]) if x else None, "b": (y["end"] - y["start"]) if y else None,
+                     "status": [x["status"] if x else None, y["status"] if y else None], "diffs": diffs})
+    def total(spans):
+        root = next(x for x in spans if not x["parent_id"])
+        return root["end"] - root["start"]
+    return {"a": a, "b": b, "duration": [total(sa), total(sb)],
+            "cost": [sum(x["attributes"].get("gen_ai.usage.cost", 0) for x in sa),
+                     sum(x["attributes"].get("gen_ai.usage.cost", 0) for x in sb)], "rows": rows}
+
+
+@app.post("/admin/restore")
+def restore_from_archive(path: str, trace_id: str = ""):
+    """Load spans back from the collector's JSONL archive (cold) into the viewer (hot)."""
+    loaded = []
+    for line in Path(path).read_text().splitlines():
+        x = json.loads(line)
+        if not trace_id or x["trace_id"] == trace_id:
+            loaded.append(x)
+    with _lock, db() as conn:
+        conn.executemany("insert or replace into spans values (?,?,?,?,?,?,?,?)",
+                         [(x["span_id"], x["trace_id"], x["parent_id"], x["name"], x["start"], x["end"],
+                           x["status"], json.dumps(x, ensure_ascii=False)) for x in loaded])
+    return {"restored": len(loaded), "traces": len({x["trace_id"] for x in loaded})}
+
+
+@app.get("/ui/compare", response_class=HTMLResponse)
+def compare_ui():
+    return COMPARE_UI.read_text()
+
+
+# /traces/{trace_id} would swallow /traces/search and /traces/compare: match it last.
+_catch_all = [r for r in app.router.routes if getattr(r, "path", "") == "/traces/{trace_id}"]
+for r in _catch_all:
+    app.router.routes.remove(r)
+    app.router.routes.append(r)
