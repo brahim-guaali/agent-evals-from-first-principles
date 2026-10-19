@@ -28,7 +28,10 @@ from opentelemetry.proto.collector.trace.v1.trace_service_pb2 import ExportTrace
 
 PLATFORM = os.environ.get("PLATFORM_URL", "http://127.0.0.1:8710").rstrip("/")
 ARCHIVE = Path(os.environ.get("COLLECTOR_ARCHIVE", Path(__file__).resolve().parents[1] / "var" / "collector"))
-FORWARD = [u for u in os.environ.get("COLLECTOR_FORWARD", "").split(",") if u]   # OTLP endpoints (stage 22)
+# OTLP backends to forward to (stage 22): COLLECTOR_FORWARD=url,url or, when a backend needs auth,
+# COLLECTOR_FORWARD_JSON='[{"name": "langfuse", "url": "...", "headers": {"Authorization": "Basic ..."}}]'
+FORWARD = [{"name": u.split("/")[2], "url": u, "headers": {}} for u in os.environ.get("COLLECTOR_FORWARD", "").split(",") if u]
+FORWARD += json.loads(os.environ.get("COLLECTOR_FORWARD_JSON", "[]"))
 BATCH_SIZE, BATCH_SECONDS = 200, 1.0
 
 app = FastAPI(title="Refund agent collector (demo)")
@@ -186,12 +189,15 @@ async def receive_traces(request: Request):
     stats["received.requests"] += 1
     with _qlock:
         _queue.extend(spans)
-    for url in FORWARD:                              # raw OTLP, as received, to another backend
+    for fwd in FORWARD:                              # raw OTLP, as received, to another backend
         try:
-            _http.post(url, content=await request.body(), headers={"content-type": request.headers.get("content-type", "")})
-            stats[f"forwarded.{url}"] += len(spans)
-        except httpx.HTTPError:
-            stats[f"forward_failed.{url}"] += len(spans)
+            r = _http.post(fwd["url"], content=await request.body(),
+                           headers={"content-type": request.headers.get("content-type", ""), **fwd.get("headers", {})})
+            r.raise_for_status()
+            stats[f"forwarded.{fwd['name']}"] += len(spans)
+        except httpx.HTTPError as e:
+            stats[f"forward_failed.{fwd['name']}"] += len(spans)
+            app.state.last_error = f"forward {fwd['name']}: {e}"[:200]
     return Response(content=b"", media_type="application/x-protobuf")
 
 
@@ -213,7 +219,7 @@ def get_stats():
     with _qlock:
         queued = len(_queue)
     return {**stats, "queued": queued, "processors": [p.__name__ for p in processors],
-            "exporters": list(EXPORTERS), "forward": FORWARD, "last_error": getattr(app.state, "last_error", None)}
+            "exporters": list(EXPORTERS), "forward": [f["name"] for f in FORWARD], "last_error": getattr(app.state, "last_error", None)}
 
 
 @app.post("/config")

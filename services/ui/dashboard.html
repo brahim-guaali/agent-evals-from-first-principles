@@ -156,7 +156,7 @@ async function path() {
     hop(s.batches, "batches<br>(batch processor)"), `<div class="arrow">→</div>`,
     ...(s.processors || []).flatMap(p => [hop(s[`processor.${p}.dropped`], `dropped by ${p}`), `<div class="arrow">→</div>`]),
     hop(s["exported.viewer"], "spans to the viewer"), hop(s["exported.file"], "spans to the archive"),
-    ...(s.forward || []).map(u => hop(s[`forwarded.${u}`], `forwarded to ${u.replace(/^https?:\/\//, "").split("/")[0]}`)),
+    ...(s.forward || []).map(name => hop(s[`forwarded.${name}`], `forwarded to ${name}`)),
     hop(s["exported.points"], "metric points<br>to the dashboard")].join("");
 }
 
