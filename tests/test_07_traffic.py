@@ -52,7 +52,13 @@ def test_two_runs_for_one_order_at_the_same_moment_pay_once(platform, tmp_path):
     threads = [threading.Thread(target=go, args=(n,)) for n in (1, 2)]
     [t.start() for t in threads]
     [t.join() for t in threads]
+    # Exactly one payment, whatever the timing. The second run either reached the payment and got
+    # `replayed` back, or (on a slower machine) read a history that already had the refund and
+    # refused under §7: both are right; paying twice is the only wrong outcome.
     assert p.payments("A-9310")["count"] == 1
     assert not any(s.get("failures") for s in states.values()), [s.get("failures") for s in states.values()]
-    assert sorted(s["payment"]["replayed"] for s in states.values()) == [False, True]
-    assert any("already been refunded" in s["reply"]["text"] for s in states.values())
+    paid = [s for s in states.values() if s.get("payment") and not s["payment"]["replayed"]]
+    others = [s for s in states.values() if s not in paid]
+    assert len(paid) == 1 and len(others) == 1
+    other = others[0]
+    assert (other.get("payment") or {}).get("replayed") or "already refunded" in " ".join(other.get("problems") or [])
