@@ -230,9 +230,11 @@ class Gemini:
 
     def _metrics(self, response, seconds, model, ttft=None):
         u = response.usage_metadata
+        inp = (u.prompt_token_count or 0) if u else 0
+        out = ((u.candidates_token_count or 0) + (u.thoughts_token_count or 0)) if u else 0
         telemetry.record_inference(seconds, self.models[0], getattr(response, "model_version", None) or model, ttft=ttft,
-                                   input_tokens=(u.prompt_token_count or 0) if u else 0,
-                                   output_tokens=((u.candidates_token_count or 0) + (u.thoughts_token_count or 0)) if u else 0)
+                                   input_tokens=inp, output_tokens=out,
+                                   cost=price_of(model, inp, out, (u.cached_content_token_count or 0) if u else 0))
 
     def _start(self, config, stream=False):
         """The CLIENT span of one model call: `chat {model}` (stage 09)."""

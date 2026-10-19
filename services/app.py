@@ -714,3 +714,31 @@ def _retention_loop():
 
 
 threading.Thread(target=_retention_loop, daemon=True).start()
+
+
+# --- alerts (stage 14) -----------------------------------------------------------------------
+@app.get("/metrics/points")
+def raw_points(since: float = 0, until: float = 1e12):
+    """Raw metric points, for the alert engine."""
+    with db() as conn:
+        return [dict(r) for r in conn.execute("select * from points where t >= ? and t < ? order by t", (since, until))]
+
+
+_alerts: list[dict] = []
+
+
+@app.post("/alerts")
+def post_alerts(events: list[dict]):
+    _alerts.extend(events)
+    return {"received": len(events)}
+
+
+@app.get("/alerts")
+def get_alerts():
+    return _alerts[-200:]
+
+
+@app.post("/admin/clear-alerts")
+def clear_alerts():
+    _alerts.clear()
+    return {"ok": True}

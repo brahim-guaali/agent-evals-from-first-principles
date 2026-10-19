@@ -1,0 +1,20 @@
+=== 210 real runs from stages 07-12 → 202 one-minute metric points, 90 minutes of traffic ===
+  0:21  the fallback model (3.1 Flash-Lite) starts answering: 3.5's daily quota is gone
+  0:35  the overloaded batch: a customer queued 14 minutes
+  1:25  both models out of quota: 14 runs crash within 6 minutes
+
+=== Rules ===
+  availability fast burn   99% of runs end without a failed lookup, a crash or a safe stop; page at 14.4x burn over 5 min and 1 h
+  latency fast burn        90% of runs finish within 60 s; page at 6x burn over 5 min and 30 min
+  first-chunk drift        time to first chunk: PSI > 0.25 against the first 15 minutes
+  spend rate               model spend above $0.30 an hour at list price
+
+=== Alerts, evaluated every minute as the traffic happened ===
+  0:28  FIRING    first-chunk drift        {'psi': 0.29, 'n': 47}
+  1:32  FIRING    availability fast burn   {'burn_short': 100.0, 'burn_long': 15.0}
+  1:36  RESOLVED  availability fast burn   {'burn_short': 0.0, 'burn_long': 17.0} after 4 min
+  1:39  RESOLVED  first-chunk drift        {'psi': None, 'n': 3} after 71 min
+
+=== SLOs over the whole window ===
+  availability: 91.4% of runs without a failure (objective 99%) · error budget used: 9x
+  latency: 76.7% of runs within 60 s (objective 90%) · budget used: 2.3x

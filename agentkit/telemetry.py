@@ -158,7 +158,8 @@ def _instrument(kind, name, unit, description):
     return _instruments[name]
 
 
-def record_inference(seconds, model, response_model=None, error=None, ttft=None, input_tokens=0, output_tokens=0):
+def record_inference(seconds, model, response_model=None, error=None, ttft=None, input_tokens=0, output_tokens=0,
+                     cost=0.0):
     a = {"gen_ai.operation.name": "chat", "gen_ai.provider.name": PROVIDER, "gen_ai.request.model": model,
          **({"gen_ai.response.model": response_model} if response_model else {}), **({"error.type": error} if error else {})}
     _instrument("histogram", "gen_ai.client.inference.duration", "s", "Model call duration").record(seconds, a)
@@ -168,6 +169,8 @@ def record_inference(seconds, model, response_model=None, error=None, ttft=None,
         _instrument("counter", "gen_ai.client.inference.usage.input_tokens", "{token}", "Input tokens").add(input_tokens, a)
     if output_tokens:
         _instrument("counter", "gen_ai.client.inference.usage.output_tokens", "{token}", "Output tokens").add(output_tokens, a)
+    if cost:                                     # not in the conventions: our own, for the spend alert (stage 14)
+        _instrument("counter", "refund_agent.cost_usd", "USD", "Model spend at list price").add(cost, a)
 
 
 def record_tool(seconds, tool, error=None):
