@@ -54,6 +54,10 @@ def db():
         create table if not exists turns (
             id integer primary key autoincrement, session_id text, customer text, role text,
             text text, run_id text, created_at text);
+        create table if not exists spans (
+            span_id text primary key, trace_id text, parent_id text, name text, start real, end_ real,
+            status text, body text);
+        create index if not exists spans_trace on spans (trace_id);
         create table if not exists feedback (
             id text primary key, run_id text, session_id text, customer text, rating integer,
             comment text, created_at text);
@@ -492,4 +496,86 @@ def ui():
 @app.post("/admin/clear-runs")
 def clear_runs():
     _runs.clear()
+    return {"ok": True}
+
+
+# --- traces: spans from the agent's OpenTelemetry exporter (stage 09) -----------------------
+TRACES_UI = Path(__file__).resolve().parent / "ui" / "traces.html"
+_span_listeners: set[asyncio.Queue] = set()
+
+
+@app.post("/v1/spans")
+async def post_spans(spans: list[dict]):
+    """Finished spans as JSON (agentkit.telemetry.ViewerExporter). Stage 10 adds real OTLP."""
+    with _lock, db() as conn:
+        conn.executemany("insert or replace into spans values (?,?,?,?,?,?,?,?)",
+                         [(x["span_id"], x["trace_id"], x["parent_id"], x["name"], x["start"], x["end"],
+                           x["status"], json.dumps(x, ensure_ascii=False)) for x in spans])
+    for x in spans:
+        for q in list(_span_listeners):
+            q.put_nowait({"trace_id": x["trace_id"], "name": x["name"]})
+    return {"received": len(spans)}
+
+
+def _summary(trace_id, rows):
+    spans = [json.loads(r["body"]) for r in rows]
+    root = next((x for x in spans if not x["parent_id"]), None) or min(spans, key=lambda x: x["start"])
+    a = root["attributes"]
+    title = a.get("refund_agent.run_id", root["name"])
+    if a.get("refund_agent.action"):
+        title += f" · {a['refund_agent.action']} ${a.get('refund_agent.amount', 0):g}"
+    return {"trace_id": trace_id, "title": title + (" (resumed)" if a.get("refund_agent.resumed") else ""),
+            "root": root["name"], "start": min(x["start"] for x in spans),
+            "duration": max(x["end"] for x in spans) - min(x["start"] for x in spans), "spans": len(spans),
+            "model_calls": sum(x["attributes"].get("gen_ai.operation.name") == "chat" for x in spans),
+            "errors": sum(x["status"] == "ERROR" for x in spans), "complete": bool(root and not root["parent_id"])}
+
+
+@app.get("/traces")
+def list_traces(limit: int = 200):
+    with db() as conn:
+        ids = [r["trace_id"] for r in conn.execute(
+            "select trace_id, max(end_) e from spans group by trace_id order by e desc limit ?", (limit,))]
+        out = []
+        for t in ids:
+            out.append(_summary(t, conn.execute("select body from spans where trace_id = ?", (t,)).fetchall()))
+    return out
+
+
+@app.get("/traces/{trace_id}")
+def get_trace(trace_id: str):
+    with db() as conn:
+        rows = conn.execute("select body from spans where trace_id = ? order by start", (trace_id,)).fetchall()
+    if not rows:
+        raise HTTPException(404, f"no trace {trace_id}")
+    return {**_summary(trace_id, rows), "spans": [json.loads(r["body"]) for r in rows]}
+
+
+@app.get("/spans/stream")
+async def stream_spans():
+    async def gen():
+        q: asyncio.Queue = asyncio.Queue()
+        _span_listeners.add(q)
+        try:
+            yield ": connected\n\n"
+            while True:
+                try:
+                    e = await asyncio.wait_for(q.get(), timeout=15)
+                    yield f"data: {json.dumps(e)}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": keep-alive\n\n"
+        finally:
+            _span_listeners.discard(q)
+    return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+@app.get("/ui/traces", response_class=HTMLResponse)
+def traces_ui():
+    return TRACES_UI.read_text()
+
+
+@app.post("/admin/clear-traces")
+def clear_traces():
+    with _lock, db() as conn:
+        conn.execute("delete from spans")
     return {"ok": True}

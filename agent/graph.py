@@ -33,6 +33,7 @@ from agent import guardrails as gr
 from agent import lookups as lk
 from agent.subagents import FRAUD_REVIEW, POLICY_EXPERT
 from agent.versions import run_meta
+from agentkit import telemetry
 from agent.support import support_agent
 from agent.verify import check
 
@@ -46,6 +47,7 @@ DB = Path(__file__).resolve().parents[1] / "var" / "langgraph.db"
 class RefundState(TypedDict, total=False):
     request: dict
     meta: dict                                  # prompt set, agent commit, environment (stage 08)
+    trace_carrier: dict                         # traceparent of the run that paused (stage 09)
     session: dict
     budget: Optional[float]
     claim: dict
@@ -70,17 +72,25 @@ class RefundState(TypedDict, total=False):
 
 def build(llm, platform, tracer=NullTracer(), db=DB):
     def traced(name, fn):
-        """Report each node to the live viewer; LangGraph does the rest."""
+        """Report each node to the live viewer, and give it a span under the run's root span
+        (stage 09). LangGraph runs nodes on worker threads, so the root's context is passed
+        explicitly rather than trusted to follow."""
         def node(state, config):
-            tracer.node_started(name, round=config.get("metadata", {}).get("langgraph_step"))
-            try:
-                update = fn(state, config)
-            except Exception as e:
-                if type(e).__name__ == "GraphInterrupt":
-                    tracer.node_waiting(name, "waiting for the operations manager")
-                else:
-                    tracer.node_failed(name, e)
-                raise
+            step = config.get("metadata", {}).get("langgraph_step")
+            tracer.node_started(name, round=step)
+            root = TracedGraph.roots.get(config["configurable"]["thread_id"])
+            with telemetry.span(f"node {name}", attributes={"langgraph.node": name, "langgraph.step": step},
+                                context=root) as span:
+                try:
+                    update = fn(state, config)
+                except Exception as e:
+                    if type(e).__name__ == "GraphInterrupt":
+                        tracer.node_waiting(name, "waiting for the operations manager")
+                        span.set_attribute("refund_agent.paused", True)
+                        telemetry.event("waiting_for_person", {"approval": "operations manager"}, span)
+                    else:
+                        tracer.node_failed(name, e)
+                    raise
             tracer.node_finished(name, update)
             return update
         return node
@@ -111,7 +121,10 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
 
     def guard(s, config):
         before = llm.usage.cost
-        events, used_model = gr.check_input(llm, s["request"]["message"])
+        with telemetry.span("guardrail prompt_injection", attributes={"guardrail.stage": "input"}) as span:
+            events, used_model = gr.check_input(llm, s["request"]["message"])
+            telemetry.set_attributes(span, {"guardrail.verdict": events[0]["verdict"], "guardrail.by": events[0]["by"],
+                                            "guardrail.evidence": [str(x) for x in events[0]["evidence"]]})
         flagged = [e for e in events if e["verdict"] == "flagged"]
         if flagged:
             tracer.log(f"guardrail: prompt injection flagged by {flagged[0]['by']}: {flagged[0]['evidence']}")
@@ -138,12 +151,24 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
                                                      f"Disputes an earlier decision: {r['message'][:120]}")
         return {"reply": reply, "spent": cost, "handoffs": [handoff]}
 
+    SEMANTIC = {"orders": ("execute_tool", "get_order"), "policy": ("execute_tool", "get_policy"),
+                "fraud": ("execute_tool", "get_fraud_score"), "history": ("retrieval", "customer_history")}
+
     def looked_up(field, service, call, schema, describe):
-        """A lookup node: fetch with retries and a schema check; a failure is data, not a crash."""
-        value, failure, attempts = lk.fetch(service, call, schema, tracer)
-        if failure:
-            return {"failures": [failure], "evidence": [f"{service}: FAILED ({failure['kind']}, "
-                                                        f"{failure['attempts']} attempts)"]}
+        """A lookup node: fetch with retries and a schema check; a failure is data, not a crash.
+        Its span says what it is in GenAI terms: a tool call, or a retrieval from memory."""
+        op, what = SEMANTIC[service]
+        attrs = {"gen_ai.operation.name": op, "gen_ai.conversation.id": telemetry.conversation_id(),
+                 **({"gen_ai.tool.name": what, "gen_ai.tool.type": "function"} if op == "execute_tool"
+                    else {"gen_ai.data_source.id": what})}
+        kind = telemetry.SpanKind.CLIENT if op == "retrieval" else telemetry.SpanKind.INTERNAL
+        with telemetry.span(f"{op} {what}", kind, attrs) as span:
+            value, failure, attempts = lk.fetch(service, call, schema, tracer)
+            span.set_attribute("refund_agent.attempts", attempts)
+            if failure:
+                telemetry.fail(span, failure["kind"], failure["detail"])
+                return {"failures": [failure], "evidence": [f"{service}: FAILED ({failure['kind']}, "
+                                                            f"{failure['attempts']} attempts)"]}
         retried = f" after {attempts} attempts" if attempts > 1 else ""
         return {field: value, "evidence": [describe(value) + retried]}
 
@@ -195,7 +220,8 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
     def ask_manager(s, config):
         d = s["decision"]
         return {"approval_request": platform.request_approval(
-            config["configurable"]["thread_id"], s["order"]["order_id"], d["amount"], d["reason"])}
+            config["configurable"]["thread_id"], s["order"]["order_id"], d["amount"], d["reason"]),
+            "trace_carrier": telemetry.carrier()}        # the resumed run links back to this span
 
     def approval(s, config):
         answer = interrupt({"approval_id": s["approval_request"]["id"],
@@ -240,7 +266,12 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
         checks = []
         if streamed:
             out["stream"] = {k: streamed[k] for k in ("ttft", "seconds", "chunks", "aborted", "model")}
-            checks = gr.check_output(text, d)              # after sending: a stream can't be unsent
+            with telemetry.span("guardrail output_facts", attributes={"guardrail.stage": "output"}) as span:
+                checks = gr.check_output(text, d)          # after sending: a stream can't be unsent
+                flags = [c for c in checks if c["verdict"] == "flagged"]
+                telemetry.set_attributes(span, {"guardrail.verdict": "flagged" if flags else "pass",
+                                                "guardrail.checks": [c["check"] for c in flags],
+                                                "guardrail.evidence": [str(e) for c in flags for e in c["evidence"]]})
             if any(c["verdict"] == "flagged" for c in checks):
                 out["correction"] = say(s, config, gr.correction(d))["text"]
                 tracer.log(f"guardrail: reply corrected: {[c['evidence'] for c in checks]}")
@@ -289,7 +320,60 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
         g.add_edge(done, END)
 
     db.parent.mkdir(parents=True, exist_ok=True)
-    return g.compile(checkpointer=SqliteSaver(sqlite3.connect(db, check_same_thread=False)))
+    return TracedGraph(g.compile(checkpointer=SqliteSaver(sqlite3.connect(db, check_same_thread=False))))
+
+
+class TracedGraph:
+    """The compiled graph, with one trace per invoke (stage 09).
+
+    The root span `invoke_workflow refund_agent` carries the run id, the customer, the session
+    (as `gen_ai.conversation.id`, also put in baggage so every span below can read it) and the
+    versions from stage 08. A run that resumes after the manager's answer, perhaps in another
+    process days later, starts a new trace linked to the span that paused: one trace per
+    piece of work, joined by a link rather than one trace that lasts three days."""
+
+    roots: dict = {}                               # thread id -> the root span's context
+
+    def __init__(self, compiled):
+        self.compiled = compiled
+
+    def __getattr__(self, name):                   # get_state, update_state, get_graph, ...
+        return getattr(self.compiled, name)
+
+    def invoke(self, value, config, **kw):
+        from opentelemetry import baggage
+        from opentelemetry import context as otel_context
+        thread = config["configurable"]["thread_id"]
+        resuming = not isinstance(value, dict)
+        request = (self.compiled.get_state(config).values.get("request") if resuming else value.get("request")) or {}
+        session = request.get("session_id") or thread
+        links = telemetry.resume_link(self.compiled.get_state(config).values.get("trace_carrier") or {}) if resuming else []
+        meta = (value.get("meta") if not resuming else None) or {}
+        attrs = {"gen_ai.operation.name": "invoke_workflow", "gen_ai.workflow.name": "refund_agent",
+                 "gen_ai.conversation.id": session, "refund_agent.run_id": thread, "refund_agent.resumed": resuming,
+                 "refund_agent.customer": request.get("customer"), "refund_agent.prompt_set": meta.get("prompt_set"),
+                 "refund_agent.agent_version": meta.get("agent")}
+        token = otel_context.attach(baggage.set_baggage("gen_ai.conversation.id", session))
+        try:
+            name = "invoke_workflow refund_agent" + (" (resumed)" if resuming else "")
+            with telemetry.span(name, attributes=attrs, links=links) as root:
+                TracedGraph.roots[thread] = otel_context.get_current()
+                try:
+                    state = self.compiled.invoke(value, config, **kw)
+                finally:
+                    TracedGraph.roots.pop(thread, None)
+                paused = bool(self.compiled.get_state(config).next)
+                d = state.get("decision") or {}
+                telemetry.set_attributes(root, {
+                    "refund_agent.paused": paused, "refund_agent.action": d.get("action"),
+                    "refund_agent.amount": d.get("amount"), "refund_agent.clause": d.get("clause"),
+                    "refund_agent.failures": len(state.get("failures") or []),
+                    "refund_agent.guardrail_flags": sum(e["verdict"] == "flagged" for e in state.get("guardrails") or [])})
+                if state.get("failures"):
+                    telemetry.fail(root, "lookup_failed", "; ".join(f"{f['service']} {f['kind']}" for f in state["failures"]))
+                return state
+        finally:
+            otel_context.detach(token)
 
 
 def route_after_lookups(s):

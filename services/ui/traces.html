@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent traces</title>
+<style>
+:root {
+  --bg: #f4f4f2; --surface: #fcfcfb; --surface-2: #f0efec; --border: #e1e0db;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #8a8984;
+  --model: #2a78d6; --tool: #0f9d8a; --memory: #8a5cd0; --agent: #d9730d; --guard: #c2417a; --node: #9a9993;
+  --critical: #d03b3b; --good: #0ca30c; --wait: #fab219;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111110; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
+    --text: #ffffff; --text-2: #c3c2b7; --muted: #8f8e86;
+    --model: #4b93ea; --tool: #2cb9a5; --memory: #a47ee4; --agent: #f08a2c; --guard: #e0609a; --node: #6e6d68;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111110; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
+  --text: #ffffff; --text-2: #c3c2b7; --muted: #8f8e86;
+  --model: #4b93ea; --tool: #2cb9a5; --memory: #a47ee4; --agent: #f08a2c; --guard: #e0609a; --node: #6e6d68;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface); flex-wrap: wrap; }
+header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+header a { color: var(--text-2); font-size: 13px; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); margin-left: auto; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 49px); }
+aside { border-right: 1px solid var(--border); background: var(--surface); overflow-y: auto; max-height: calc(100vh - 49px); }
+.tr { padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.tr:hover, .tr.sel { background: var(--surface-2); }
+.tr.sel { box-shadow: inset 3px 0 0 var(--model); }
+.tr .n { font-weight: 500; }
+.tr .m { font-size: 12px; color: var(--text-2); }
+.tr .err { color: var(--critical); }
+main { padding: 16px; min-width: 0; display: grid; gap: 14px; align-content: start; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; min-width: 0; }
+.card h2 { font-size: 12px; margin: 0 0 10px; color: var(--text-2); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+.tiles { display: flex; flex-wrap: wrap; gap: 18px; }
+.tile .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile .l { font-size: 12px; color: var(--text-2); }
+.wf { position: relative; }
+.row { display: grid; grid-template-columns: minmax(150px, 34%) 1fr; align-items: center; height: 24px; cursor: pointer; border-radius: 4px; }
+.row:hover, .row.sel { background: var(--surface-2); }
+.row .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; font-family: var(--mono); padding-right: 8px; }
+.row .lane { position: relative; height: 100%; }
+.bar { position: absolute; top: 5px; height: 14px; border-radius: 3px; min-width: 2px; }
+.bar.err { outline: 2px solid var(--critical); outline-offset: 1px; }
+.bar .ev { position: absolute; top: -3px; width: 2px; height: 20px; background: var(--critical); }
+.bar .ev.ok { background: var(--text); opacity: .5; }
+.dur { position: absolute; top: 4px; font-size: 11px; color: var(--text-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.axis { display: grid; grid-template-columns: minmax(150px, 34%) 1fr; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.axis .ticks { position: relative; height: 14px; }
+.axis .ticks span { position: absolute; transform: translateX(-50%); }
+.detail { font-size: 13px; }
+.detail table { border-collapse: collapse; width: 100%; }
+.detail td { padding: 3px 8px 3px 0; vertical-align: top; border-bottom: 1px solid var(--border); }
+.detail td:first-child { font-family: var(--mono); font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.detail td:last-child { font-family: var(--mono); font-size: 12px; word-break: break-word; }
+.empty { color: var(--text-2); padding: 24px; text-align: center; }
+body.replay header, body.replay aside, body.replay .detailcard { display: none; }
+body.replay .layout { grid-template-columns: 1fr; }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  aside { max-height: 220px; border-right: 0; border-bottom: 1px solid var(--border); }
+  .row, .axis { grid-template-columns: 42% 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Agent traces</h1><a href="/ui">live runs</a>
+  <div class="legend">
+    <span><i style="background:var(--model)"></i>model</span><span><i style="background:var(--tool)"></i>tool</span>
+    <span><i style="background:var(--memory)"></i>memory</span><span><i style="background:var(--agent)"></i>sub-agent</span>
+    <span><i style="background:var(--guard)"></i>guardrail</span><span><i style="background:var(--node)"></i>graph step</span>
+  </div>
+</header>
+<div class="layout">
+  <aside id="list"><div class="empty">No traces yet. Run any stage from 09 on.</div></aside>
+  <main id="main"><div class="empty">Pick a trace.</div></main>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+let traces = [], current = null, selected = null, replayAt = null;
+
+function colour(s) {
+  const op = s.attributes["gen_ai.operation.name"], n = s.name;
+  if (op === "chat" || op === "generate_content") return "var(--model)";
+  if (op === "invoke_agent") return "var(--agent)";
+  if (op === "retrieval" || /memory/.test(op || "")) return "var(--memory)";
+  if (op === "execute_tool") return "var(--tool)";
+  if (n.startsWith("guardrail")) return "var(--guard)";
+  return "var(--node)";
+}
+const fmt = s => s < 1 ? `${Math.round(s * 1000)} ms` : `${s.toFixed(s < 10 ? 2 : 1)} s`;
+
+async function loadList() {
+  traces = await (await fetch("/traces")).json();
+  $("#list").innerHTML = traces.length ? traces.map(t => `<div class="tr ${current && t.trace_id === current.trace_id ? "sel" : ""}" data-id="${t.trace_id}">
+    <div class="n">${esc(t.title)}</div>
+    <div class="m">${fmt(t.duration)} · ${t.spans} spans · ${t.model_calls} model calls${t.errors ? ` · <span class="err">${t.errors} errors</span>` : ""}</div></div>`).join("")
+    : `<div class="empty">No traces yet. Run any stage from 09 on.</div>`;
+  document.querySelectorAll(".tr").forEach(el => el.onclick = () => open(el.dataset.id));
+}
+
+async function open(id) {
+  current = await (await fetch(`/traces/${id}`)).json();
+  selected = null;
+  draw();
+  loadList();
+}
+
+function tree(spans) {
+  const byId = Object.fromEntries(spans.map(s => [s.span_id, {...s, children: []}]));
+  const roots = [];
+  for (const s of Object.values(byId)) (byId[s.parent_id] ? byId[s.parent_id].children : roots).push(s);
+  const out = [];
+  const walk = (s, depth) => { out.push({...s, depth}); s.children.sort((a, b) => a.start - b.start).forEach(c => walk(c, depth + 1)); };
+  roots.sort((a, b) => a.start - b.start).forEach(r => walk(r, 0));
+  return out;
+}
+
+function draw() {
+  if (!current) return;
+  const spans = current.spans, t0 = Math.min(...spans.map(s => s.start)), t1 = Math.max(...spans.map(s => s.end));
+  const total = Math.max(t1 - t0, 0.001), at = replayAt === null ? Infinity : t0 + replayAt;
+  const visible = tree(spans).filter(s => s.start <= at);
+  const root = spans.find(s => !s.parent_id) || spans[0];
+  const models = spans.filter(s => s.attributes["gen_ai.operation.name"] === "chat");
+  const tokens = models.reduce((n, s) => n + (s.attributes["gen_ai.usage.input_tokens"] || 0) + (s.attributes["gen_ai.usage.output_tokens"] || 0), 0);
+  const slowest = spans.filter(s => s.parent_id).sort((a, b) => (b.end - b.start) - (a.end - a.start))[0];
+  const errors = spans.filter(s => s.status === "ERROR").length;
+  const ticks = [0, .25, .5, .75, 1].map(f => `<span style="left:${f * 100}%">${fmt(total * f)}</span>`).join("");
+  $("#main").innerHTML = `
+  <div class="card"><div class="tiles">
+    <div class="tile"><div class="v">${fmt(total)}</div><div class="l">${esc(root.name)}</div></div>
+    <div class="tile"><div class="v">${spans.length}</div><div class="l">spans</div></div>
+    <div class="tile"><div class="v">${models.length}</div><div class="l">model calls · ${tokens.toLocaleString()} tokens</div></div>
+    <div class="tile"><div class="v">${slowest ? fmt(slowest.end - slowest.start) : "–"}</div><div class="l">slowest: ${esc(slowest?.name)}</div></div>
+    <div class="tile"><div class="v" style="color:${errors ? "var(--critical)" : "inherit"}">${errors}</div><div class="l">errors</div></div>
+  </div></div>
+  <div class="card"><h2>Waterfall</h2>
+    <div class="axis"><div></div><div class="ticks">${ticks}</div></div>
+    <div class="wf">${visible.map(s => {
+      const end = Math.min(s.end, at), left = (s.start - t0) / total * 100, width = Math.max((end - s.start) / total * 100, .2);
+      const evs = s.events.filter(e => e.t <= at).map(e => `<div class="ev ${/429|error|fail|flag|rate|exhaust|invalid/i.test(e.name) ? "" : "ok"}" title="${esc(e.name)}" style="left:${(e.t - s.start) / Math.max(s.end - s.start, .001) * 100}%"></div>`).join("");
+      return `<div class="row ${selected === s.span_id ? "sel" : ""}" data-id="${s.span_id}">
+        <div class="name" style="padding-left:${s.depth * 14}px" title="${esc(s.name)}">${esc(s.name)}</div>
+        <div class="lane"><div class="bar ${s.status === "ERROR" ? "err" : ""}" style="left:${left}%;width:${width}%;background:${colour(s)}">${evs}</div>
+        <span class="dur" style="left:calc(${Math.min(left + width, 88)}% + 4px)">${s.end <= at ? fmt(s.end - s.start) : ""}</span></div></div>`;
+    }).join("")}</div></div>
+  <div class="card detailcard"><h2>Span</h2><div class="detail" id="detail">Click a span.</div></div>`;
+  document.querySelectorAll(".row").forEach(el => el.onclick = () => { selected = el.dataset.id; draw(); });
+  if (selected) showDetail(spans.find(s => s.span_id === selected));
+}
+
+function showDetail(s) {
+  if (!s) return;
+  const rows = [["name", s.name], ["kind", s.kind], ["duration", fmt(s.end - s.start)], ["status", s.status + (s.status_message ? `: ${s.status_message}` : "")],
+    ...Object.entries(s.attributes), ...s.events.map(e => [`event @ ${fmt(e.t - s.start)}`, `${e.name} ${JSON.stringify(e.attributes)}`]),
+    ...s.links.map(l => ["link", `${l.trace_id} ${JSON.stringify(l.attributes)}`])];
+  $("#detail").innerHTML = `<table>${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(typeof v === "object" ? JSON.stringify(v) : v)}</td></tr>`).join("")}</table>`;
+}
+
+// /traces?replay=<trace id>: draw the trace as it was at time t (seek(t) from a recorder).
+const params = new URLSearchParams(location.search);
+if (params.get("replay")) {
+  document.body.classList.add("replay");
+  fetch(`/traces/${params.get("replay")}`).then(r => r.json()).then(t => {
+    current = t; replayAt = 0; draw();
+    const spans = t.spans; window.replayEnd = Math.max(...spans.map(s => s.end)) - Math.min(...spans.map(s => s.start));
+    window.seek = x => { replayAt = x; draw(); };
+    window.ready = true;
+  });
+} else {
+  loadList();
+  const es = new EventSource("/spans/stream");
+  es.onmessage = e => { const d = JSON.parse(e.data); if (current && d.trace_id === current.trace_id) open(current.trace_id); else loadList(); };
+}
+</script>
+</body>
+</html>

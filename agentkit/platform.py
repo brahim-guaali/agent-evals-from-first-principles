@@ -1,7 +1,12 @@
 """HTTP client for the food-delivery platform (services/app.py)."""
 import os
 
+import re
+
 import httpx
+from opentelemetry.trace import SpanKind
+
+from agentkit import telemetry
 
 TIMEOUT = float(os.environ.get("PLATFORM_TIMEOUT", "5"))   # a hung service fails after this
 
@@ -11,13 +16,27 @@ class Platform:
         self.url = url or os.environ.get("PLATFORM_URL", "http://127.0.0.1:8710")
         self.http = httpx.Client(base_url=self.url, timeout=timeout)
 
+    def _request(self, method, path, **kw):
+        """One HTTP call, as a CLIENT span (stage 09): method, route, status, server."""
+        if not telemetry.in_trace():
+            return self.http.request(method, path, **kw)
+        route = re.sub(r"/(A-\w+|C-[\w-]+|apr_\w+|sess-\w+|[\w-]+-[0-9a-f]{6})(?=/|$)", "/{id}", path)
+        attrs = {"http.request.method": method, "url.template": route, "server.address": self.http.base_url.host,
+                 "server.port": self.http.base_url.port}
+        with telemetry.span(f"{method} {route}", SpanKind.CLIENT, attrs) as s:
+            r = self.http.request(method, path, **kw)
+            s.set_attribute("http.response.status_code", r.status_code)
+            if r.status_code >= 400:
+                telemetry.fail(s, str(r.status_code), r.text[:120])
+            return r
+
     def _get(self, path, **params):
-        r = self.http.get(path, params=params or None)
+        r = self._request("GET", path, params=params or None)
         r.raise_for_status()
         return r.json()
 
     def _post(self, path, json=None, headers=None):
-        r = self.http.post(path, json=json, headers=headers)
+        r = self._request("POST", path, json=json, headers=headers)
         r.raise_for_status()
         return r.json()
 
@@ -60,7 +79,7 @@ class Platform:
 
     def push_chunk(self, session_id, run_id, seq, text):
         """False when the customer has closed the chat (409)."""
-        r = self.http.post(f"/chat/{session_id}/chunks", json={"run_id": run_id, "seq": seq, "text": text})
+        r = self.http.post(f"/chat/{session_id}/chunks", json={"run_id": run_id, "seq": seq, "text": text})  # no span per chunk
         if r.status_code == 409:
             return False
         r.raise_for_status()

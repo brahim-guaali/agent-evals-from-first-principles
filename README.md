@@ -14,15 +14,15 @@ The agent comes from [graph engineering from first principles](https://github.co
 | 00 | [`00-baseline/`](00-baseline/) | The refund agent we start from, and why it's still a toy |
 | | **Part 1 · A realistic agent** | |
 | 01 | [`01-memory/`](01-memory/) | The customer's history: past refunds, notes from earlier runs, no second refund on one order, frequent claimers go to a manager |
-| 02 | `02-conversations/` | Sessions over several turns ("why only $72?") |
-| 03 | `03-sub-agents/` | Fraud-review and policy sub-agents, hand-offs |
-| 04 | `04-streaming/` | Streamed replies: time to first token, aborted streams |
-| 05 | `05-failures/` | 500s, bad data, hangs, invalid model output, 429s and model fallback |
-| 06 | `06-guardrails/` | Prompt-injection detection |
-| 07 | `07-traffic/` | A replayer: the cases hundreds of times with variations |
-| 08 | `08-signals/` | Customer ratings; prompt, model and environment on every run |
+| 02 | [`02-conversations/`](02-conversations/) | Sessions over several turns ("why only $72?") |
+| 03 | [`03-sub-agents/`](03-sub-agents/) | Fraud-review and policy sub-agents, hand-offs |
+| 04 | [`04-streaming/`](04-streaming/) | Streamed replies: time to first token, aborted streams |
+| 05 | [`05-failures/`](05-failures/) | 500s, bad data, hangs, invalid model output, 429s and model fallback |
+| 06 | [`06-guardrails/`](06-guardrails/) | Prompt-injection detection |
+| 07 | [`07-traffic/`](07-traffic/) | A replayer: the cases hundreds of times with variations |
+| 08 | [`08-signals/`](08-signals/) | Customer ratings; prompt, model and environment on every run |
 | | **Part 2 · The camera** | |
-| 09 | `09-spans/` | OpenTelemetry GenAI spans by hand: model, tool, memory, sub-agent, sessions, the manager's wait |
+| 09 | [`09-spans/`](09-spans/) | OpenTelemetry GenAI spans by hand: model, tool, memory, sub-agent, sessions, the manager's wait |
 | 10 | `10-data-path/` | Exporter, collector, metrics; latency percentiles and a dashboard |
 | 11 | `11-privacy/` | Redacting customer data, content capture off by default, retention |
 | 12 | `12-cost/` | Cost per run, customer and day; cache hits; a metering proxy with a budget stop |

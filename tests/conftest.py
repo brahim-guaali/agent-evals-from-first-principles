@@ -46,3 +46,10 @@ def platform_url(tmp_path_factory):
 def platform(platform_url):
     httpx.post(platform_url + "/admin/reset")
     return platform_url
+
+
+@pytest.fixture(scope="session", autouse=True)
+def spans():
+    """Every test records spans in memory (stage 09): no exporter, nothing leaves the process."""
+    from agentkit import telemetry
+    return telemetry.setup_in_memory()

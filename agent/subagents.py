@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 
 from google.genai import types
 
+from agentkit import telemetry
+
 
 @dataclass
 class SubAgent:
@@ -28,7 +30,20 @@ class SubAgent:
         return [d for d, _ in self.tools.values()] + [done]
 
     def run(self, llm, platform, task, caller, tracer=None):
-        """Run the loop. Returns the hand-off record; its `result` is the finish() arguments."""
+        """Run the loop inside an `invoke_agent {name}` span (stage 09). Returns the hand-off
+        record; its `result` is the finish() arguments."""
+        attrs = {"gen_ai.operation.name": "invoke_agent", "gen_ai.agent.name": self.name,
+                 "gen_ai.agent.description": self.description, "gen_ai.conversation.id": telemetry.conversation_id(),
+                 "refund_agent.handoff.from": caller}
+        with telemetry.span(f"invoke_agent {self.name}", attributes=attrs) as span:
+            record = self._run(llm, platform, task, caller, tracer)
+            telemetry.set_attributes(span, {"refund_agent.handoff.steps": len(record["steps"]),
+                                            "refund_agent.handoff.result": record["result"]})
+            if record["result"] is None:
+                telemetry.fail(span, "step_limit", record.get("error", ""))
+            return record
+
+    def _run(self, llm, platform, task, caller, tracer):
         record = {"from": caller, "to": self.name, "task": task, "steps": [], "result": None}
         t0 = time.monotonic()
         contents = [types.Content(role="user", parts=[types.Part.from_text(text=task)])]
@@ -49,10 +64,18 @@ class SubAgent:
                         tracer.log(f"{self.name} → {caller}: {json.dumps(args, ensure_ascii=False)[:160]}")
                     return record
                 decl, fn = self.tools[call.name]
-                try:
-                    result = fn(platform, **args)
-                except Exception as e:                      # a failing tool is information
-                    result = {"error": f"{type(e).__name__}: {e}"}
+                with telemetry.span(f"execute_tool {call.name}", attributes={
+                        "gen_ai.operation.name": "execute_tool", "gen_ai.tool.name": call.name,
+                        "gen_ai.tool.type": "function", "gen_ai.tool.call.id": getattr(call, "id", None),
+                        "gen_ai.agent.name": self.name, "gen_ai.tool.description": decl.description}) as tspan:
+                    try:
+                        result = fn(platform, **args)
+                    except Exception as e:                  # a failing tool is information
+                        result = {"error": f"{type(e).__name__}: {e}"}
+                        telemetry.fail(tspan, type(e).__name__, str(e))
+                    if telemetry.capture_content():
+                        telemetry.set_attributes(tspan, {"gen_ai.tool.call.arguments": args,
+                                                         "gen_ai.tool.call.result": result})
                 record["steps"].append({"tool": call.name, "args": args,
                                         "result": json.dumps(result, ensure_ascii=False)[:300]})
                 if tracer:

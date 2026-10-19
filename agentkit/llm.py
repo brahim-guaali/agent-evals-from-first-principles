@@ -4,6 +4,7 @@ It also does the dull, necessary parts: it stays under the free tier's rate limi
 on 429 and 503, falls back to a lighter model when the main one is overloaded, and counts
 every call and token so stages can compare cost.
 """
+import json
 import os
 import threading
 import time
@@ -11,6 +12,9 @@ from dataclasses import dataclass, field
 
 from google import genai
 from google.genai import errors, types
+from opentelemetry.trace import SpanKind
+
+from agentkit import telemetry
 
 MODELS = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite,gemini-3.1-flash-lite").split(",")
 RPM = float(os.environ.get("GEMINI_RPM", "8"))
@@ -63,11 +67,13 @@ class _RateLimiter:
         self.interval, self.next_at, self.lock = 60.0 / rpm, 0.0, threading.Lock()
 
     def wait(self):
+        """Returns how long this call waited for its turn."""
         with self.lock:
             now = time.monotonic()
             at = max(now, self.next_at)
             self.next_at = at + self.interval
         time.sleep(max(0.0, at - now))
+        return max(0.0, at - now)
 
 
 _limiter = _RateLimiter(RPM)
@@ -76,6 +82,31 @@ _exhausted: set = set()          # models whose free daily quota ran out in this
 
 class _MidStream(Exception):
     """A stream that failed after words reached the customer: retrying would repeat them."""
+
+
+def _messages(contents):
+    """The prompt in the GenAI conventions' message shape (only when content capture is on)."""
+    if isinstance(contents, str):
+        return json.dumps([{"role": "user", "parts": [{"type": "text", "content": contents}]}], ensure_ascii=False)
+    out = []
+    for c in contents:
+        parts = []
+        for p in c.parts or []:
+            if p.text:
+                parts.append({"type": "text", "content": p.text})
+            elif p.function_call:
+                parts.append({"type": "tool_call", "name": p.function_call.name, "arguments": dict(p.function_call.args or {})})
+            elif p.function_response:
+                parts.append({"type": "tool_call_response", "response": str(p.function_response.response)[:2000]})
+        out.append({"role": "assistant" if c.role == "model" else c.role, "parts": parts})
+    return json.dumps(out, ensure_ascii=False, default=str)
+
+
+def _output(response):
+    try:
+        return _messages([response.candidates[0].content])
+    except (AttributeError, IndexError, TypeError):
+        return "[]"
 
 
 class Gemini:
@@ -91,6 +122,7 @@ class Gemini:
     def _event(self, kind, model, attempt, **extra):
         with self.usage._lock:
             self.usage.events.append({"kind": kind, "model": model, "attempt": attempt, **extra})
+        telemetry.event(f"gen_ai.{kind}", {"gen_ai.request.model": model, "attempt": attempt, **extra})
 
     def _model_for(self, attempt):
         """Two tries per model, in order, skipping models whose daily quota is spent."""
@@ -106,7 +138,12 @@ class Gemini:
             if previous and model != previous:
                 self._event("fallback", model, attempt + 1, after=previous)
             previous = model
-            _limiter.wait()
+            waited = _limiter.wait()
+            if waited > 0.05:                              # our own client-side limit, not Gemini
+                telemetry.event("rate_limiter.wait", {"seconds": round(waited, 2)})
+                span = telemetry.current()
+                span.set_attribute("rate_limiter.wait_s", round(
+                    (span.attributes or {}).get("rate_limiter.wait_s", 0) + waited, 2))
             try:
                 return work(model)
             except (errors.ServerError, errors.ClientError) as e:
@@ -129,13 +166,46 @@ class Gemini:
                 time.sleep(2 ** attempt)
         raise RuntimeError(f"Gemini kept failing: {last}")
 
+    @staticmethod
+    def _response_attributes(span, response, model):
+        """GenAI conventions: what answered, why it stopped, and the tokens it used."""
+        u = response.usage_metadata
+        cand = (response.candidates or [None])[0]
+        telemetry.set_attributes(span, {
+            "gen_ai.response.model": getattr(response, "model_version", None) or model,
+            "gen_ai.response.id": getattr(response, "response_id", None),
+            "gen_ai.response.finish_reasons": [cand.finish_reason.name] if cand is not None and cand.finish_reason else None,
+            "gen_ai.usage.input_tokens": u.prompt_token_count if u else None,
+            "gen_ai.usage.output_tokens": ((u.candidates_token_count or 0) + (u.thoughts_token_count or 0)) if u else None,
+            "gen_ai.usage.reasoning.output_tokens": (u.thoughts_token_count or None) if u else None,
+            "gen_ai.usage.cache_read.input_tokens": (u.cached_content_token_count or None) if u else None,
+            "refund_agent.model_used": model,
+        })
+
+    def _start(self, config, stream=False):
+        """The CLIENT span of one model call: `chat {model}` (stage 09)."""
+        attrs = {"gen_ai.operation.name": "chat", "gen_ai.provider.name": telemetry.PROVIDER,
+                 "gen_ai.request.model": self.models[0], "gen_ai.request.temperature": config.temperature,
+                 "gen_ai.request.stream": stream or None, "gen_ai.conversation.id": telemetry.conversation_id(),
+                 "server.address": "generativelanguage.googleapis.com"}
+        if telemetry.capture_content():
+            attrs["gen_ai.system_instructions"] = [{"type": "text", "content": str(config.system_instruction)}]
+        return telemetry.span(f"chat {self.models[0]}", SpanKind.CLIENT, attrs)
+
     def _generate(self, contents, config):
-        def work(model):
-            t0 = time.monotonic()
-            response = self.client.models.generate_content(model=model, contents=contents, config=config)
-            self.usage.add(response, time.monotonic() - t0, model)
-            return response
-        return self._with_retries(work)
+        with self._start(config) as span:
+            if telemetry.capture_content():
+                span.set_attribute("gen_ai.input.messages", _messages(contents))
+
+            def work(model):
+                t0 = time.monotonic()
+                response = self.client.models.generate_content(model=model, contents=contents, config=config)
+                self.usage.add(response, time.monotonic() - t0, model)
+                self._response_attributes(span, response, model)
+                if telemetry.capture_content():
+                    span.set_attribute("gen_ai.output.messages", _output(response))
+                return response
+            return self._with_retries(work)
 
     def chat(self, system, contents, tools):
         """For the agent loop: the model sees the whole transcript and may call tools."""
@@ -152,7 +222,10 @@ class Gemini:
         arrives; if it returns False the customer is gone, so we stop generating. Returns the
         text, time to first token, total time, number of chunks and whether it was cut off."""
         config = types.GenerateContentConfig(system_instruction=system, temperature=0.3)
+        with self._start(config, stream=True) as span:
+            return self._stream(span, config, prompt, on_chunk)
 
+    def _stream(self, span, config, prompt, on_chunk):
         def work(model):
             t0, text, chunks, ttft, final = time.monotonic(), "", 0, None, None
             stream = self.client.models.generate_content_stream(model=model, contents=prompt, config=config)
@@ -173,6 +246,11 @@ class Gemini:
             aborted = final is None or not (final.candidates and final.candidates[0].finish_reason)
             if final is not None and final.usage_metadata:
                 self.usage.add(final, time.monotonic() - t0, model)
+                self._response_attributes(span, final, model)
+            telemetry.set_attributes(span, {"gen_ai.response.time_to_first_chunk": ttft, "refund_agent.chunks": chunks,
+                                            "refund_agent.stream_aborted": aborted})
+            if aborted:
+                telemetry.event("stream.aborted", {"chunks_sent": chunks, "reason": "the customer closed the chat"})
             return {"text": text, "ttft": ttft, "seconds": time.monotonic() - t0, "chunks": chunks,
                     "aborted": aborted, "model": model}
         return self._with_retries(work)
