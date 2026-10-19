@@ -18,7 +18,7 @@ To see it work, a real pull request: [#1 "Fewer manager approvals: only customer
 
 ![The gate going red, then green](gate.gif)
 
-*The real CI runs of PR #1 ([red](https://github.com/brahim-guaali/agent-observability-from-first-principles/actions/runs/39343370474), [green](https://github.com/brahim-guaali/agent-observability-from-first-principles/actions/runs/39343491542)): the GitHub run page (screenshot, signed out) above the gate's own output from that run, rendered with [`viz/terminal.py`](../viz/terminal.py).*
+*The real CI runs of PR #1 ([red](https://github.com/brahim-guaali/agent-observability-from-first-principles/actions/runs/39343518759), [green](https://github.com/brahim-guaali/agent-observability-from-first-principles/actions/runs/39343679243)): the GitHub run page (screenshot, signed out) above the gate's own output from that run, rendered with [`viz/terminal.py`](../viz/terminal.py).*
 
 ```
 FAILED tests/test_01_memory.py::test_a_frequent_claimer_needs_a_manager_even_for_15_dollars
