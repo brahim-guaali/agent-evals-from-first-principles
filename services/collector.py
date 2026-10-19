@@ -140,6 +140,9 @@ EXPORTERS = {"viewer": export_viewer, "file": export_file}
 
 def run_pipeline(spans):
     for p in processors:
+        if p.__name__ == "tail_sample":            # holds spans back: count what it returns, not drops
+            spans = p(spans)
+            continue
         before = len(spans)
         spans = p(spans)
         stats[f"processor.{p.__name__}.dropped"] += before - len(spans)
@@ -155,11 +158,15 @@ def run_pipeline(spans):
 
 
 def _batcher():
-    """The batch processor: flush every BATCH_SECONDS or BATCH_SIZE spans, whichever first."""
+    """The batch processor: flush every BATCH_SECONDS or BATCH_SIZE spans, whichever first.
+    A tick with nothing new still runs the processors if one of them holds spans back (tail
+    sampling waits for whole traces)."""
     while True:
         time.sleep(BATCH_SECONDS)
         with _qlock:
             batch, _queue[:] = _queue[:], []
+        if not batch and any(getattr(p, "__name__", "") == "tail_sample" for p in processors):
+            run_pipeline([])
         while batch:
             chunk, batch = batch[:BATCH_SIZE], batch[BATCH_SIZE:]
             stats["batches"] += 1

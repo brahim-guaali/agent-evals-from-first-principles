@@ -398,6 +398,7 @@ class TracedGraph:
                     "refund_agent.paused": paused, "refund_agent.action": d.get("action"),
                     "refund_agent.amount": d.get("amount"), "refund_agent.clause": d.get("clause"),
                     "refund_agent.failures": len(state.get("failures") or []),
+                    "refund_agent.budget_stop": bool(state.get("budget_stop")),
                     "refund_agent.guardrail_flags": sum(e["verdict"] == "flagged" for e in state.get("guardrails") or [])})
                 if state.get("failures"):
                     telemetry.fail(root, "lookup_failed", "; ".join(f"{f['service']} {f['kind']}" for f in state["failures"]))

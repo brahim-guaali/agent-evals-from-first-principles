@@ -1,0 +1,21 @@
+=== Replaying real runs at volume ===
+  75 recorded runs in the archive → 1000 replays ({'ok': 860, 'error': 47, 'flagged': 52, 'slow': 41})
+
+=== Head sampling: the SDK keeps 10% of traces at random ===
+  sent by the agent: 77 traces (2,044 spans) · stored: 77 traces (2,044 spans)
+    error    kept    4 of   47  (9%)
+    slow     kept    2 of   41  (5%)
+    flagged  kept    1 of   52  (2%)
+    ok       kept   70 of  860  (8%)
+  error rate measured from the stored traces: 5.2% (true: 4.7%)
+
+=== Tail sampling in the collector: errors, slow, flagged, plus 5% of the rest ===
+  sent by the agent: 1000 traces (26,824 spans) · stored: 178 traces (5,118 spans)
+    error    kept   47 of   47  (100%)
+    slow     kept   41 of   41  (100%)
+    flagged  kept   52 of   52  (100%)
+    ok       kept   38 of  860  (4%)
+  tail sampler decisions: {'traces': 1000, 'dropped': 822, 'errors': 47, 'flagged': 52, 'slow': 41, 'baseline': 38}
+  error rate measured from the stored traces: 26.4% (true: 4.7%)
+
+  stored spans: head 2,044 vs tail 5,118 of 26,824 produced
