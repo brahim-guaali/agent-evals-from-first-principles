@@ -9,3 +9,4 @@ var/
 *.log
 var-platform*.log
 var-collector*.log
+var-meter*.log

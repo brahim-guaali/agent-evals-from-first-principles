@@ -46,6 +46,10 @@ def report(rows, show=print):
     by = defaultdict(list)
     for r in rows:
         by[r["base"] + (" (repeat)" if r["repeat"] else "")].append(r)
+    stopped = Counter((r.get("summary") or "").replace("escalated: ", "") for r in ok
+                      if "budget" in str(r.get("summary")) or "no model" in str(r.get("summary")))
+    if stopped:
+        show(f"  stopped safely: {dict(stopped)}")
     show("  by case:")
     for base, rs in sorted(by.items()):
         wrong = [r for r in rs if not r["correct"]]

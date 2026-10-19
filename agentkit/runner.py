@@ -4,6 +4,7 @@ A manager answers if the run pauses for one. `outcome()` reduces a finished run 
 the case set checks (action, amount, whether a manager was asked), so stages can score
 themselves against `cases.CASES`.
 """
+import os
 import time
 import uuid
 
@@ -14,16 +15,18 @@ from agentkit.llm import Gemini
 from agentkit.trace import Tracer
 
 
-def run_case(case, platform, stage, title=None, manager="approved", prefix="r", llm=None, meta=None):
-    llm = llm or Gemini()
+def run_case(case, platform, stage, title=None, manager="approved", prefix="r", llm=None, meta=None, budget=None):
     thread = f"{prefix}-" + uuid.uuid4().hex[:6]
+    budget = budget if budget is not None else (float(os.environ["RUN_BUDGET_USD"]) if os.environ.get("RUN_BUDGET_USD") else None)
+    llm = llm or Gemini(run_id=thread, budget=budget, customer=case.get("customer"))
+    platform = platform.for_run(thread, budget, case.get("customer"))
     tracer = Tracer(stage, title or case.get("id", "run"), usage=llm.usage, run_id=thread)
     graph = build(llm, platform, tracer)
     tracer.start(spec(graph))
     config = {"configurable": {"thread_id": thread}}
     t0 = time.monotonic()
     state = graph.invoke({"request": case, **({"meta": meta} if meta else {})}, config)
-    asked = bool(graph.get_state(config).next)
+    asked = bool(graph.get_state(config).next) and not state.get("budget_stop")
     if asked:
         platform.decide_approval(state["approval_request"]["id"], manager)
         state = graph.invoke(Command(resume=manager), config)

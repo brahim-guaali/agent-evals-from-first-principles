@@ -12,9 +12,18 @@ TIMEOUT = float(os.environ.get("PLATFORM_TIMEOUT", "5"))   # a hung service fail
 
 
 class Platform:
-    def __init__(self, url=None, timeout=TIMEOUT):
+    def __init__(self, url=None, timeout=TIMEOUT, headers=None):
         self.url = url or os.environ.get("PLATFORM_URL", "http://127.0.0.1:8710")
-        self.http = httpx.Client(base_url=self.url, timeout=timeout)
+        self.http = httpx.Client(base_url=self.url, timeout=timeout, headers=headers)
+
+    def for_run(self, run_id, budget=None, customer=None):
+        """This platform, reached through the metering proxy for one run (stage 12)."""
+        meter = os.environ.get("METER_URL")
+        if not meter:
+            return self
+        headers = {"x-run-id": run_id, **({"x-run-budget": str(budget)} if budget else {}),
+                   **({"x-customer": customer} if customer else {})}
+        return Platform(f"{meter.rstrip('/')}/platform", self.http.timeout, headers)
 
     def _request(self, method, path, **kw):
         """One HTTP call, as a CLIENT span (stage 09): method, route, status, server."""

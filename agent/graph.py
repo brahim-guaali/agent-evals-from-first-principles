@@ -35,6 +35,7 @@ from agent import lookups as lk
 from agent.subagents import FRAUD_REVIEW, POLICY_EXPERT
 from agent.versions import run_meta
 from agentkit import telemetry
+from agentkit.llm import BudgetExceeded, ModelUnavailable
 from agent.support import support_agent
 from agent.verify import check
 
@@ -49,6 +50,7 @@ class RefundState(TypedDict, total=False):
     request: dict
     meta: dict                                  # prompt set, agent commit, environment (stage 08)
     trace_carrier: dict                         # traceparent of the run that paused (stage 09)
+    budget_stop: bool                           # the meter refused a call (stage 12)
     session: dict
     budget: Optional[float]
     claim: dict
@@ -323,10 +325,13 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
         g.add_edge(done, END)
 
     db.parent.mkdir(parents=True, exist_ok=True)
-    return TracedGraph(g.compile(checkpointer=SqliteSaver(sqlite3.connect(db, check_same_thread=False))))
+    traced_graph = TracedGraph(g.compile(checkpointer=SqliteSaver(sqlite3.connect(db, check_same_thread=False))))
+    traced_graph.platform = platform
+    return traced_graph
 
 
 class TracedGraph:
+    platform = None                                # set by build(), for the budget stop
     """The compiled graph, with one trace per invoke (stage 09).
 
     The root span `invoke_workflow refund_agent` carries the run id, the customer, the session
@@ -342,6 +347,20 @@ class TracedGraph:
 
     def __getattr__(self, name):                   # get_state, update_state, get_graph, ...
         return getattr(self.compiled, name)
+
+    def _budget_stop(self, config, request, session, thread, why):
+        """End the run safely, without the model: what's done is done (a payment already made
+        stays made, idempotently), and the customer is told a person will finish it."""
+        state = dict(self.compiled.get_state(config).values)
+        paid = state.get("payment")
+        text = (f"Your refund of ${paid['amount']:.2f} is on its way." if paid and not paid.get("replayed") else
+                "Thanks for your patience. A colleague will look at this and get back to you today.")
+        if self.platform is not None and request.get("customer"):
+            self.platform.add_turn(session, request["customer"], "agent", text, thread)
+            self.platform.notify(request["customer"], text)
+        telemetry.event("budget_stop", {"reason": why[:200]})
+        return {**state, "budget_stop": True,
+                "reply": {"text": text, "queue": "support-escalations", "why": "run budget exceeded"}}
 
     def invoke(self, value, config, **kw):
         from opentelemetry import baggage
@@ -364,9 +383,16 @@ class TracedGraph:
                 TracedGraph.roots[thread] = otel_context.get_current()
                 try:
                     state = self.compiled.invoke(value, config, **kw)
+                except BudgetExceeded as e:             # the meter stopped the run (stage 12)
+                    state = self._budget_stop(config, request, session, thread, str(e))
+                    telemetry.fail(root, "budget_exceeded", str(e))
+                except ModelUnavailable as e:           # every model out of quota: stop safely, don't crash
+                    state = self._budget_stop(config, request, session, thread, str(e))
+                    state["reply"]["why"] = "no model available"
+                    telemetry.fail(root, "model_unavailable", str(e))
                 finally:
                     TracedGraph.roots.pop(thread, None)
-                paused = bool(self.compiled.get_state(config).next)
+                paused = bool(self.compiled.get_state(config).next) and not state.get("budget_stop")
                 d = state.get("decision") or {}
                 telemetry.set_attributes(root, {
                     "refund_agent.paused": paused, "refund_agent.action": d.get("action"),
