@@ -1,0 +1,21 @@
+=== 40 requests, environment staging, agent bb2b102-dirty, prompt set 944bc7f7 ===
+  prompts: classify 044201c0, decide fe128059, explain 93391230, compose 342979e3, fraud_review c7603c9b, policy_expert c8bb5d9c, support ca91a60c, injection_check b52f6239
+     110 s: 10 arrived, 5 finished, 2 waiting
+     211 s: 20 arrived, 11 finished, 6 waiting
+     417 s: 30 arrived, 22 finished, 5 waiting
+     537 s: 40 arrived, 30 finished, 7 waiting
+
+=== Ratings joined to runs ===
+  22 of 40 customers rated (55%); average 2.86 stars
+  joined back to their runs by run_id: 22/22
+  by outcome: credit 2.5★ (2), escalate 2.5★ (2), handoff 3.0★ (1), refund 3.4★ (14), refuse 1.0★ (3)
+  by wait (message to reply): 60-120 s 3.7★ (7), over 120 s 2.2★ (12), under 60 s 3.3★ (3)
+  by prompt set: 944bc7f7 2.9★ (22)
+  by environment: staging 2.9★ (22)
+  lowest rated runs:
+    1★ "Useless" run t-7ce4c8 · refuse $0 under §7 · 154 s wait · prompts 944bc7f7 · agent bb2b102-dirty · gemini-3.1-flash-lite
+    1★ "Never ordering again" run t-ae41f9 · refuse $0 under §7 · 172 s wait · prompts 944bc7f7 · agent bb2b102-dirty · gemini-3.1-flash-lite
+    1★ "Unfair, I'm leaving the app" run t-d16a91 · refuse $0 under §7 · 140 s wait · prompts 944bc7f7 · agent bb2b102-dirty · gemini-3.1-flash-lite
+    1★ "Useless" run t-fa5ea2 · credit $0 under §6 · 170 s wait · prompts 944bc7f7 · agent bb2b102-dirty · gemini-3.1-flash-lite
+    2★ "Took too long" run t-9e7b9a · refund $560 under §1 · 153 s wait · prompts 944bc7f7 · agent bb2b102-dirty · gemini-3.1-flash-lite
+  versions seen in this batch: [('bb2b102-dirty', '944bc7f7', 'staging')]
