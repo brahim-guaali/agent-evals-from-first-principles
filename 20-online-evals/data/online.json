@@ -1,0 +1,40 @@
+{
+ "counts": {
+  "every_call_has_usage:pass": 146,
+  "at_most_one_payment:pass": 95,
+  "verify_loop_bounded:pass": 119,
+  "within_latency_slo:pass": 110,
+  "output_check_passed:pass": 113,
+  "under_budget:pass": 21,
+  "output_check_passed:fail": 2,
+  "sub_agents_finished:pass": 7,
+  "within_latency_slo:fail": 9
+ },
+ "series": [
+  {
+   "group": "pass",
+   "t": 1792453020,
+   "value": 15.0
+  },
+  {
+   "group": "pass",
+   "t": 1792453080,
+   "value": 488.0
+  },
+  {
+   "group": "fail",
+   "t": 1792453080,
+   "value": 2.0
+  },
+  {
+   "group": "fail",
+   "t": 1792453140,
+   "value": 9.0
+  },
+  {
+   "group": "pass",
+   "t": 1792453140,
+   "value": 108.0
+  }
+ ]
+}

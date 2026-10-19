@@ -760,13 +760,13 @@ def _trace_spans(conn, trace_id):
 
 @app.get("/traces/search")
 def search_traces(status: str = "", min_s: float = 0, max_s: float = 1e9, q: str = "", attr: str = "",
-                  limit: int = 50, sort: str = "recent"):
+                  limit: int = 50, sort: str = "recent", since: float = 0):
     """Find runs: by error status, duration, a word in any span name or attribute, or an exact
     attribute on any span (attr=guardrail.verdict=flagged)."""
     key, _, want = attr.partition("=")
     out = []
     with db() as conn:
-        ids = [r["trace_id"] for r in conn.execute("select distinct trace_id from spans")]
+        ids = [r["trace_id"] for r in conn.execute("select distinct trace_id from spans where end_ >= ?", (since,))]
         for t in ids:
             spans = _trace_spans(conn, t)
             root = next((x for x in spans if not x["parent_id"]), None)
@@ -940,6 +940,25 @@ def export_labels(annotator: str = ""):
 @app.get("/ui/annotate", response_class=HTMLResponse)
 def annotate_ui():
     return ANNOTATE_UI.read_text()
+
+
+# --- curated cases need their order back (stage 20) ---------------------------------------------
+class SeedOrder(BaseModel):
+    order: dict
+    fraud: dict | None = None
+    history: dict | None = None
+
+
+@app.post("/admin/orders")
+def seed_order(o: SeedOrder):
+    """Put an order (and its customer's fraud score and past refunds) back on the platform, so a
+    case curated from production can be run again exactly."""
+    data.ORDERS[o.order["order_id"]] = o.order
+    if o.fraud:
+        data.FRAUD[o.order["customer"]] = o.fraud
+    if o.history:
+        data.HISTORY[o.order["customer"]] = o.history
+    return {"ok": True}
 
 
 # /traces/{trace_id} would swallow /traces/search and /traces/compare: match it last.

@@ -1,0 +1,13 @@
+=== 150 real runs replayed as live traffic (3 a second); the evaluator follows ===
+  evaluated 150 runs while they arrived (first score 1.0 s after the first run, last 53.8 s)
+
+  check                               pass  fail  pass rate
+  at_most_one_payment                   95     0  100%
+  every_call_has_usage                 146     0  100%
+  output_check_passed                  113     2  98%
+  sub_agents_finished                    7     0  100%
+  under_budget                          21     0  100%
+  verify_loop_bounded                  119     0  100%
+  within_latency_slo                   110     9  92%
+
+  pass rate per minute, all checks: 100%, 100%, 92%
