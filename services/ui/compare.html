@@ -58,7 +58,7 @@ if (p.get("a") && p.get("b")) fetch(`/traces/compare?a=${p.get("a")}&b=${p.get("
     <div class="tile"><div class="v">${changed}</div><div class="l">spans that differ or exist on one side only</div></div>
   </div></div>
   <div class="card"><table>${c.rows.map(r => `<tr>
-    <td class="p" title="${esc(r.path)}" style="padding-left:${(r.path.split("/").length - 1) * 12}px">${esc(r.path.split("/").pop())}</td>
+    <td class="p" title="${esc(r.path)}" style="padding-left:${(r.path.split(" › ").length - 1) * 12}px">${esc(r.path.split(" › ").pop())}</td>
     <td class="bars">${r.a != null ? `<div class="bar" style="width:${r.a / max * 100}%;background:var(--a)"></div>` : `<div class="missing">not in A</div>`}
       ${r.b != null ? `<div class="bar" style="width:${r.b / max * 100}%;background:var(--b)"></div>` : `<div class="missing">not in B</div>`}</td>
     <td class="d">${fmt(r.a)} → ${fmt(r.b)}${r.status.includes("ERROR") ? ` <span class="err">${r.status.join(" → ")}</span>` : ""}</td>

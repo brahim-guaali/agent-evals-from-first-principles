@@ -800,7 +800,7 @@ def _paths(spans):
             visited.add(cur["span_id"])
             parts.append(cur["name"].replace(" (resumed)", "").replace(" (replay)", ""))
             cur = by_id.get(cur["parent_id"])
-        path = "/".join(reversed(parts))
+        path = " › ".join(reversed(parts))          # not "/": HTTP routes have slashes of their own
         seen[path] = seen.get(path, 0) + 1
         out[path + (f"#{seen[path]}" if seen[path] > 1 else "")] = x
     return out
