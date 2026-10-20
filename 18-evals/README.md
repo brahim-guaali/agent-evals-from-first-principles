@@ -54,6 +54,8 @@ python 18-evals/run.py --cases      # the case set, live: the offline eval
 - **The first version of a check was wrong.** `every_call_has_usage` first failed 16 runs: model calls the meter had refused, or that failed with no answer, have no tokens to record. A check needs the same care as the code it checks; it now only counts calls that got an answer.
 - Nothing paid twice, nothing paid after a failed lookup, every verify loop stopped within 3 tries.
 
+**The case set, live** (`--cases`, after the free quota reset): **18/18 correct**, 61 model calls, $0.0174 at list price. The offline eval is the case set run as a test: the same 18 messages, the expected decision for each, and nothing to judge but the outcome.
+
 Full output: [`output.txt`](output.txt).
 
 ## Where it breaks

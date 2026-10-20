@@ -1,0 +1,146 @@
+[
+ {
+  "case": "late-catering",
+  "correct": true,
+  "run_id": "ev-4c89b1",
+  "cost": 0.0008673999999999999,
+  "calls": 3,
+  "seconds": 10.905746042029932
+ },
+ {
+  "case": "missing-dessert",
+  "correct": true,
+  "run_id": "ev-147c8c",
+  "cost": 0.0008732,
+  "calls": 3,
+  "seconds": 15.041413291997742
+ },
+ {
+  "case": "rude-rider",
+  "correct": true,
+  "run_id": "ev-b14fe9",
+  "cost": 0.0005244,
+  "calls": 3,
+  "seconds": 14.932177834038157
+ },
+ {
+  "case": "slightly-late",
+  "correct": true,
+  "run_id": "ev-b81290",
+  "cost": 0.0008641,
+  "calls": 3,
+  "seconds": 14.895969083008822
+ },
+ {
+  "case": "fraud",
+  "correct": true,
+  "run_id": "ev-62fe8d",
+  "cost": 0.0008277,
+  "calls": 3,
+  "seconds": 17.615678249974735
+ },
+ {
+  "case": "cancelled-after-cooking",
+  "correct": true,
+  "run_id": "ev-653915",
+  "cost": 0.0008376999999999999,
+  "calls": 3,
+  "seconds": 12.274284542014357
+ },
+ {
+  "case": "late-grill",
+  "correct": true,
+  "run_id": "ev-7de7ca",
+  "cost": 0.0008765,
+  "calls": 3,
+  "seconds": 15.920730915968306
+ },
+ {
+  "case": "spoiled-pizza",
+  "correct": true,
+  "run_id": "ev-5610a2",
+  "cost": 0.0008451999999999999,
+  "calls": 3,
+  "seconds": 14.052800750010647
+ },
+ {
+  "case": "prompt-injection",
+  "correct": true,
+  "run_id": "ev-1b52dd",
+  "cost": 0.0008648,
+  "calls": 3,
+  "seconds": 15.092979124980047
+ },
+ {
+  "case": "late-office-lunch",
+  "correct": true,
+  "run_id": "ev-9aa616",
+  "cost": 0.0008940999999999999,
+  "calls": 3,
+  "seconds": 14.841158457973506
+ },
+ {
+  "case": "missing-sides",
+  "correct": true,
+  "run_id": "ev-4ca4f0",
+  "cost": 0.0008412000000000001,
+  "calls": 3,
+  "seconds": 14.9317907919758
+ },
+ {
+  "case": "arabic-late",
+  "correct": true,
+  "run_id": "ev-e8f2eb",
+  "cost": 0.0008732,
+  "calls": 3,
+  "seconds": 15.053727124992292
+ },
+ {
+  "case": "already-refunded",
+  "correct": true,
+  "run_id": "ev-43e303",
+  "cost": 0.0009929,
+  "calls": 3,
+  "seconds": 14.94801708398154
+ },
+ {
+  "case": "frequent-claimer",
+  "correct": true,
+  "run_id": "ev-e3baf7",
+  "cost": 0.0008780999999999999,
+  "calls": 3,
+  "seconds": 15.152477583964355
+ },
+ {
+  "case": "grey-shared-device",
+  "correct": true,
+  "run_id": "ev-b0fcb0",
+  "cost": 0.0019304999999999997,
+  "calls": 6,
+  "seconds": 31.4036782499752
+ },
+ {
+  "case": "grey-household",
+  "correct": true,
+  "run_id": "ev-69280a",
+  "cost": 0.0019196,
+  "calls": 6,
+  "seconds": 31.768270708969794
+ },
+ {
+  "case": "invented-clause",
+  "correct": true,
+  "run_id": "ev-db5f19",
+  "cost": 0.0008029,
+  "calls": 3,
+  "seconds": 15.085049083980266
+ },
+ {
+  "case": "hey-bot",
+  "correct": true,
+  "run_id": "ev-d8c92c",
+  "cost": 0.0009159999999999999,
+  "calls": 4,
+  "seconds": 19.91333804198075
+ }
+]

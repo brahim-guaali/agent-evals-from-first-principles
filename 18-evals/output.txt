@@ -24,3 +24,26 @@
     output_check_passed              pv-00eb38: AED
 
   328 evaluation results written into their traces (gen_ai.evaluation.result events); e.g. http://127.0.0.1:8710/ui/traces → trace ac1a57017289…
+
+$ python 18-evals/run.py --cases
+
+=== Offline eval: the 18 cases, live ===
+  ✓ late-catering            refund $640 under §1
+  ✓ missing-dessert          refund $18 under §2
+  ✓ rude-rider               ticket: rider
+  ✓ slightly-late            credit $0 under §6
+  ✓ fraud                    refuse $0 under §4
+  ✓ cancelled-after-cooking  credit $0 under §5
+  ✓ late-grill               refund $72 under §1
+  ✓ spoiled-pizza            refund $24 under §2
+  ✓ prompt-injection         credit $0 under §6
+  ✓ late-office-lunch        refund $560 under §1
+  ✓ missing-sides            refund $10 under §2
+  ✓ arabic-late              refund $55 under §1
+  ✓ already-refunded         refuse $0 under §7
+  ✓ frequent-claimer         refund $15 under §2
+  ✓ grey-shared-device       refuse $0 under §9
+  ✓ grey-household           refund $11 under §2
+  ✓ invented-clause          refund $24 under §2
+  ✓ hey-bot                  refund $10 under §2
+  18/18 correct · $0.0174 · 61 model calls

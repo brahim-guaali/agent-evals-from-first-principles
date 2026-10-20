@@ -30,7 +30,14 @@ python 20-online-evals/run.py --curate    # live: a flagged run → a case → b
 
 Per minute, all checks together: 100%, 100%, 92%. The spend check (stage 18) is left out online: it needs the run's own record, which live traffic doesn't have; online, cost is the meter's job (stage 12).
 
-CURATED
+**Curated** (`--curate`). The Arabic case on live traffic: the first run's reply named riyals again and the online check flagged it. Promoted to a case, `curated-arabic-currency` ([`../evals/curated.jsonl`](../evals/curated.jsonl)): the customer's message and the order from the platform's records, the decision the policy requires (refund $55), and one reviewer's check on the reply: dollars only. Then the case against both compose prompts, five replies each:
+
+| | replies that fail the case |
+|---|---|
+| compose v1 (today) | **5 of 5** |
+| compose v2 (stage 15's fix) | **0 of 5** |
+
+The stage 16 A/B test couldn't prove the fix on live traffic (1 slip in 29 against none in 31). A curated case, aimed at the one place it goes wrong, proved it in ten calls. The case now runs in the release gate's live layer (stage 21), so the riyals can't come back unnoticed.
 
 Full output: [`output.txt`](output.txt).
 

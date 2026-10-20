@@ -11,3 +11,14 @@
   within_latency_slo                   110     9  92%
 
   pass rate per minute, all checks: 100%, 100%, 92%
+
+$ python 20-online-evals/run.py --curate
+=== 1. Live traffic until the online check flags a reply ===
+  run cur-1: output check FLAGGED ['ريال']
+
+=== 2. Promote it to a case: the message and order from the platform, the expectation from a reviewer ===
+  curated-arabic-currency: "طلبي A-9880 وصل بعد ساعة من الموعد والأكل بارد. أريد استرداد المبلغ." · expect {'action': 'refund', 'amount': 55, 'approval': False} · reply in USD · from trace 1f2b5a08fe76…
+
+=== 3. The new case on compose v1 (today) and v2 (the fix), five times each ===
+  compose v1: 5/5 replies fail the case
+  compose v2: 0/5 replies fail the case
