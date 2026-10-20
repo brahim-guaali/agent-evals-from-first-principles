@@ -23,7 +23,7 @@ PLATFORM = "http://127.0.0.1:8710"
 
 def archived_runs():
     by = collections.defaultdict(list)
-    for f in sorted((ROOT / "var" / "collector").glob("spans-*.jsonl")):
+    for f in sorted((ROOT / "history").glob("spans-*.jsonl")) + sorted((ROOT / "var" / "collector").glob("spans-*.jsonl")):
         for line in f.read_text().splitlines():
             s = json.loads(line)
             if "replay.of" not in s["attributes"] and not s["name"].startswith("evaluate "):
@@ -34,7 +34,7 @@ def archived_runs():
 
 def run_records():
     rows = {}
-    for f in glob.glob(str(ROOT / "*" / "data" / "*.jsonl")):
+    for f in glob.glob(str(ROOT / "history" / "*.jsonl")) + glob.glob(str(ROOT / "*" / "data" / "*.jsonl")):
         for line in open(f):
             r = json.loads(line)
             if r.get("run_id"):
@@ -70,7 +70,7 @@ def traces_part():
                 shown[name] += 1
                 print(f"    {name:<32} {root['attributes'].get('refund_agent.run_id')}: {r['explanation']}")
     # results into the traces, next to what they judged
-    archive = sorted((ROOT / "var" / "collector").glob("spans-*.jsonl"))[-1]
+    archive = (sorted((ROOT / "var" / "collector").glob("spans-*.jsonl")) or sorted((ROOT / "history").glob("spans-*.jsonl")))[-1]
     httpx.post(f"{PLATFORM}/admin/clear-traces")
     httpx.post(f"{PLATFORM}/admin/restore", params={"path": str(archive), "skip_prefix": "evaluate "})
     for tid, (root, res) in results.items():

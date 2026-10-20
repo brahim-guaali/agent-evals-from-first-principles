@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-observability-from-first-principles"
+name = "agent-evals-from-first-principles"
 version = "0.1.0"
-description = "A real refund agent, made realistic, then given a camera (traces, cost) and a referee (evals, a release gate)."
+description = "Evals for a production AI agent: annotation, checks read from traces, a calibrated LLM judge, online evals, a release gate."
 requires-python = ">=3.11"
 license = "MIT"
 dependencies = [

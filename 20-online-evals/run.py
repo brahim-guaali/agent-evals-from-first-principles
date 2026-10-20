@@ -25,7 +25,8 @@ def online(n=150, per_s=3.0):
     httpx.post(f"{PLATFORM}/admin/clear-traces")
     httpx.post(f"{COLLECTOR}/config", params={"processors": ""})
     traces = [[s for s in t if not s["name"].startswith("evaluate ")]              # stage 18's results aren't traffic
-              for f in sorted((ROOT / "var" / "collector").glob("spans-*.jsonl")) for t in load_traces(f)
+              for f in sorted((ROOT / "history").glob("spans-*.jsonl")) + sorted((ROOT / "var" / "collector").glob("spans-*.jsonl"))
+              for t in load_traces(f)
               if not any("replay.of" in s["attributes"] for s in t)]
     chosen, rng = plan(traces, n, seed=61, spread_s=n / per_s)
     print(f"=== {n} real runs replayed as live traffic ({per_s:g} a second); the evaluator follows ===")
