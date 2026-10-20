@@ -885,6 +885,14 @@ def enqueue(items: list[QueueItem]):
     return {"queued": len(items)}
 
 
+@app.post("/admin/clear-queue")
+def clear_queue():
+    """Empty the annotation queue (labels stay)."""
+    with _lock, db() as conn:
+        n = conn.execute("delete from queue where item_id not in (select item_id from labels)").rowcount
+    return {"removed": n}
+
+
 @app.get("/annotations/schema")
 def label_schema():
     return LABEL_SCHEMA
