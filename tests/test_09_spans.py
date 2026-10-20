@@ -70,3 +70,14 @@ def test_the_resumed_run_is_a_new_trace_linked_to_the_one_that_paused(platform, 
     resumed = next(s for s in spans.get_finished_spans() if s.name == "invoke_workflow refund_agent (resumed)")
     assert resumed.context.trace_id != first.context.trace_id
     assert resumed.links[0].context.trace_id == first.context.trace_id
+
+
+def test_tracing_off_never_breaks_a_model_call(monkeypatch):
+    """Found in stage 22: with no tracer recording, the rate limiter's bookkeeping crashed the run."""
+    from opentelemetry.trace import INVALID_SPAN
+    from agentkit import llm, telemetry
+    monkeypatch.setattr(telemetry, "current", lambda: INVALID_SPAN)
+    monkeypatch.setattr(llm._limiter, "wait", lambda: 1.0)
+    g = llm.Gemini.__new__(llm.Gemini)
+    g.models, g.usage = ["m"], llm.Usage()
+    assert g._with_retries(lambda model: "answer") == "answer"

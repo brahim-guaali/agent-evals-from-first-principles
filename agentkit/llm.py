@@ -180,9 +180,9 @@ class Gemini:
             waited = _limiter.wait()
             if waited > 0.05:                              # our own client-side limit, not Gemini
                 telemetry.event("rate_limiter.wait", {"seconds": round(waited, 2)})
-                span = telemetry.current()
-                span.set_attribute("rate_limiter.wait_s", round(
-                    (span.attributes or {}).get("rate_limiter.wait_s", 0) + waited, 2))
+                span = telemetry.current()              # with tracing off this span records nothing,
+                so_far = (getattr(span, "attributes", None) or {}).get("rate_limiter.wait_s", 0)   # and has no attributes
+                span.set_attribute("rate_limiter.wait_s", round(so_far + waited, 2))
             try:
                 return work(model)
             except (errors.ServerError, errors.ClientError) as e:
