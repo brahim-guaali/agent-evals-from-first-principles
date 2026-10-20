@@ -11,20 +11,16 @@ from dataclasses import dataclass, field
 
 from agentkit import judgments
 
-COMPOSE_V2 = """You write the reply a food-delivery app's support sends to a customer, in the
-customer's language. Start with the outcome and the amount, then the reason in one sentence,
-then when the money or credit arrives. At most 60 words. Amounts are always in US dollars:
-write them with a $ sign, whatever the customer's language, and never name another currency.
-Don't promise anything the decision doesn't say."""
+COMPOSE_V2 = judgments.COMPOSE        # the default since part 4
 
 PROMPTS = {
-    "compose": {"v1": judgments.COMPOSE, "v2": COMPOSE_V2},
+    "compose": {"v1": judgments.COMPOSE_V1, "v2": COMPOSE_V2},
 }
 
 
 def text(name, versions):
-    """The prompt text for a run: its pinned version, or v1."""
-    return PROMPTS[name][(versions or {}).get(name, "v1")]
+    """The prompt text for a run: its pinned version, or v2 (the default since part 4)."""
+    return PROMPTS[name][(versions or {}).get(name, "v2")]
 
 
 @dataclass

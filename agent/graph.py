@@ -247,7 +247,7 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
         sid, seq = session_of(s, config), iter(range(10_000))
         before = llm.usage.cost
         system = None
-        if (s.get("prompt_versions") or {}).get("compose", "v1") != "v1":     # an experiment's arm (stage 16)
+        if "compose" in (s.get("prompt_versions") or {}):     # an experiment's arm pins its version (stage 16)
             from agent.experiments import text
             system = text("compose", s["prompt_versions"])
         out = judgments.compose(llm, s["request"]["message"], s["decision"],

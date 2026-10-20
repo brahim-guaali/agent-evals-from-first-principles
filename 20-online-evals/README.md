@@ -37,7 +37,7 @@ Per minute, all checks together: 100%, 100%, 92%. The spend check (stage 18) is 
 | compose v1 (today) | **5 of 5** |
 | compose v2 (stage 15's fix) | **0 of 5** |
 
-The stage 16 A/B test couldn't prove the fix on live traffic (1 slip in 29 against none in 31). A curated case, aimed at the one place it goes wrong, proved it in ten calls. The case now runs in the release gate's live layer (stage 21), so the riyals can't come back unnoticed.
+The stage 16 A/B test couldn't prove the fix on live traffic (1 slip in 29 against none in 31). A curated case, aimed at the one place it goes wrong, proved it in ten calls. The case now runs in the release gate's live layer (stage 21), so the riyals can't come back unnoticed. And v2 is now the reply prompt every run uses ([`agentkit/judgments.py`](../agentkit/judgments.py); v1 stays as `COMPOSE_V1` for the A/B arm): the A/B said it was cheaper, this case says it fixes the currency.
 
 Full output: [`output.txt`](output.txt).
 

@@ -32,3 +32,14 @@ def test_a_real_difference_and_noise_are_told_apart():
     assert abtest.z_test(10, 100, 12, 100) > 0.5           # 10% vs 12%: noise
     lo, hi = abtest.bootstrap_diff([1.0] * 50, [2.0] * 50)
     assert lo > 0.9 and hi < 1.1
+
+
+def test_a_pinned_v1_arm_still_gets_v1_now_that_v2_is_the_default(platform, tmp_path):
+    from agentkit import judgments
+    model = ScriptedStructured(answers(order_id="A-9310", amount=72))
+    g = build(model, Platform(platform), db=tmp_path / "lg.db")
+    grill = next(c for c in CASES if c["id"] == "late-grill")
+    g.invoke({"request": grill, "prompt_versions": {"compose": "v1"}}, {"configurable": {"thread_id": "ab2"}})
+    assert model.stream_systems == [judgments.COMPOSE_V1]
+    from agent.experiments import text
+    assert text("compose", {}) == judgments.COMPOSE == text("compose", {"compose": "v2"})
