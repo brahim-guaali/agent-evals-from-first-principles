@@ -1,0 +1,23 @@
+=== The same grey-zone refund, instrumented two ways ===
+
+  hand-written (OTel GenAI conventions): 45 spans in 1 trace(s) · {'invoke_workflow': 1, 'other': 14, 'http': 14, 'chat': 6, 'retrieval': 1, 'execute_tool': 8, 'invoke_agent': 1}
+    names: GET /customers/{id}/devices, GET /customers/{id}/history, GET /fraud/{id}, GET /orders/{id}, GET /policy, GET /sessions/{id}, POST /customers/{id}/notes, POST /notifications, POST /sessions/{id}/turns, chat gemini-3.5-flash-lite, execute_tool get_devices, execute_tool get_fraud_score, execute_tool get_history, execute_tool get_order, execute_tool get_policy, guardrail output_facts, guardrail prompt_injection, invoke_agent fraud_review …
+    attributes most spans carry: server.address, gen_ai.operation.name, http.request.method, url.template, server.port, http.response.status_code, gen_ai.conversation.id, langgraph.node, langgraph.step, gen_ai.tool.name, gen_ai.tool.type, gen_ai.provider.name
+
+  auto (OpenInference): 22 spans in 7 trace(s) · {'CHAIN': 16, 'LLM': 6}
+    traces: LangGraph (16), GenerateContentStream (1), GenerateContent (1), GenerateContent (1), GenerateContent (1), GenerateContent (1), GenerateContent (1)
+    names: GenerateContent, GenerateContentStream, LangGraph, classify, decide, fraud, fraud_review, guard, history, order, policy, reply, route_after_classify, route_after_lookups, route_after_verify, screen, session, verify
+    attributes most spans carry: input.value, input.mime_type, openinference.span.kind, output.value, output.mime_type, session.id, metadata, llm.provider, llm.input_messages.0.message.role, llm.input_messages.0.message.content, llm.input_messages.1.message.role, llm.input_messages.1.message.content
+
+                                              hand    auto   (spans that carry it)
+  model calls with token counts                  6       6
+  the decision (action, amount, clause)          1       0
+  sub-agent as an agent span                     1       0
+  platform HTTP calls                           14       0
+  guardrail verdicts                             2       0
+  retries, quota hits, fallbacks                 0       0
+  cost per call                                  6       0
+  prompt and response text                       0      22
+  the conversation (session id)                 12      16
+
+  the auto run's model calls in its LangGraph trace: 0 of 6
