@@ -17,7 +17,8 @@ TEXT = "medium.com/@brahimg"
 FONT = "/System/Library/Fonts/Helvetica.ttc"
 
 FILES = [
-    # every image and video used in the READMEs, the write-up and social clips; added stage by stage
+    # every image and video used in the write-up and the posts (social/ clips carry the URL already)
+    "18-evals/evaluations-in-trace.png", "21-release-gate/gate.gif",
 ]
 
 

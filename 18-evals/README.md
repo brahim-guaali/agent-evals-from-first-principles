@@ -1,6 +1,6 @@
 # 18 · Evals: the referee's rulebook
 
-Part 2 built the camera: we can see what every run did. Part 3 builds the referee: something that says whether it was *good*. The first kind of referee needs no judgement at all. Some rules are certain from the trace alone, and checking them is just code ([`evals/checks.py`](../evals/checks.py)):
+Part 3 built the camera: we can see what every run did. Part 4 builds the referee: something that says whether it was *good*. The first kind of referee needs no judgement at all. Some rules are certain from the trace alone, and checking them is just code ([`evals/checks.py`](../evals/checks.py)):
 
 | Check | Fails when |
 |---|---|
