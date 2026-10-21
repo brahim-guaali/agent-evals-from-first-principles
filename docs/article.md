@@ -27,13 +27,26 @@ What the referee found:
 
 And the case set, run live as a test: 18 out of 18 correct.
 
-## 2. People, and a judge that reads like them
+## 2. Labels, and a judge that reads like them
 
-Code can check amounts and counts. It can't read. Is "tips go to the rider" grounded in the policy? Was a refusal explained kindly? That takes judgement.
+Code can check amounts and counts. It can't read. Is "your refund arrives in 3 to 5 days" grounded in the FAQ? Was a refusal explained kindly? That takes judgement, and a model can give it for every run, but only once it's been measured against runs whose right answers are known.
 
-So the platform got an annotation queue: thirty real runs, each queued with a reason (a sample of traffic, every guardrail flag, every hand-written case), labelled by a person on four questions. Then an LLM judge, asked the same four questions, and checked against that person: agreement and Cohen's kappa per question, and a position-bias test (the same two replies, swapped).
+So the platform got an annotation queue: thirty real runs, each queued with a reason (a sample of traffic, every guardrail flag, every hand-written case) and frozen as the reviewer would see them. Four questions each: is the decision right, are the amount and currency right, does the reply say only what the facts support, how does it read.
 
-**[Results pending: the labels and the judge's calibration go here.]**
+How the labels were made matters, so here it is plainly. **The factual questions were labelled from the known right answers**: every run is a test case or a variant of one, with its expected decision on record. **Grounding and tone were labelled by a second model (Claude) with a written rubric**, in one pass before the judge (Gemini) ran. Model-against-model agreement is weaker evidence than people's labels; a person-labelled set is the next step.
+
+The labels found something none of the code checks could: **26 of 30 replies said things nobody had told them.** 17 refund replies promised the money "in 3 to 5 business days"; the FAQ says 5 to 10 working days. The reply prompt never sees the FAQ, so it wrote what refund emails usually say. Every decision behind those replies was right.
+
+Then the judge, on the same 30 runs:
+
+| question | labels from | agreement | kappa |
+|---|---|---|---|
+| decision correct | known right answers | 29/30 | n/a (every label is yes) |
+| amount and currency right | known right answers | 30/30 | 1.00 |
+| reply grounded | second model, rubric | 22/30 | 0.37 |
+| tone | second model, rubric | 25/30 | |
+
+On facts it's reliable. Its one "wrong decision" was a gap in what it was shown: a refund that a manager had approved, recorded under the wrong clause. On grounding, it caught every "3 to 5 business days" and let through every "your credit is ready right now" (the FAQ says within an hour). That's a policy question, and it belongs in the judge's prompt. Swapping the order of two replies never changed its pick (no position bias in 12 pairs), but it preferred the longer reply 11 times out of 12.
 
 ## 3. The referee on the field
 
@@ -79,7 +92,7 @@ Auto-instrumentation recorded all 6 model calls with their tokens, and every nod
 1. **Start with checks that need no judgement.** They're cheap, exact, and run on every trace you ever kept.
 2. **Write the verdict into the trace**, next to what it judged.
 3. **Test your checks.** A wrong check fails runs that were fine, and people stop reading it.
-4. **Calibrate a judge against a person** before trusting it, question by question.
+4. **Calibrate a judge against labelled runs** before trusting it, question by question, and say where the labels came from. Known right answers are strong evidence; another model's opinion is weak.
 5. **Turn every production failure into a case.** A curated case proves in ten calls what an A/B test can't in sixty.
 6. **Gate pull requests in layers**, cheapest first, with a fixed model so the code can be blamed alone.
 7. **With auto-instrumentation, check the tree first.** Is each run one trace?

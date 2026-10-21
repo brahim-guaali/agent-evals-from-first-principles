@@ -60,4 +60,4 @@ Full output: [`output.txt`](output.txt).
 
 ## Where it breaks
 
-Code can check what's certain: amounts, counts, statuses. It can't read. Whether "the refund covers the order total; tips go to the rider" is *grounded*, whether a refusal was explained kindly, whether the decision was the right call in a case no rule covers: that takes judgement. A person can give it, slowly (stage 17). Next: [19 · the judge](../19-judge/), a model that reads like that person, and a test of how far to trust it.
+Code can check what's certain: amounts, counts, statuses. It can't read. Whether "the refund covers the order total; tips go to the rider" is *grounded*, whether a refusal was explained kindly, whether the decision was the right call in a case no rule covers: that takes judgement. Labelled runs give it, slowly (stage 17). Next: [19 · the judge](../19-judge/), a model that reads like the labels, and a test of how far to trust it.

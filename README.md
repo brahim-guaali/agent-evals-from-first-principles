@@ -8,9 +8,9 @@
 
 A course in runnable code. The refund agent from parts 1–3 is production-shaped and fully traced: we can see everything it does. This part decides whether what it did was **good**, and stops a change that makes it worse from shipping.
 
-- **People first:** an annotation queue where a person labels runs against fixed questions.
+- **Labels first:** an annotation queue where runs are labelled against fixed questions: from the known right answers for the factual ones, by a rubric for the rest.
 - **Checks that need no judgement:** nine rules read straight from a run's trace (does the spend match the bill, did it pay twice, did the reply name the right currency), with the results written back into the trace.
-- **A model as judge**, but only after it's calibrated against the person's labels, and tested for position bias.
+- **A model as judge**, but only after it's calibrated against those labels, and tested for position bias.
 - **Online evals** that score live traffic as it arrives, and **curated cases** made from bad production runs.
 - **A release gate** in GitHub Actions: a well-meant change that makes the agent worse goes red.
 - **Platforms:** the same OpenTelemetry spans in Phoenix and Langfuse, next to auto-instrumentation.
@@ -26,7 +26,7 @@ A course in runnable code. The refund agent from parts 1–3 is production-shape
 | 00 | [`00-starting-point/`](00-starting-point/) | The agent as parts 1–3 left it |
 | 17 | [`17-annotation/`](17-annotation/) | An annotation queue: frozen run snapshots, a label schema, a labelling page |
 | 18 | [`18-evals/`](18-evals/) | Nine deterministic checks read from traces; results as `gen_ai.evaluation.result` in the trace |
-| 19 | [`19-judge/`](19-judge/) | An LLM judge calibrated on a person's labels (agreement, kappa), and a position-bias test |
+| 19 | [`19-judge/`](19-judge/) | An LLM judge calibrated on labelled runs (agreement, kappa, factual and judgement questions apart), and a position-bias test |
 | 20 | [`20-online-evals/`](20-online-evals/) | Live traffic scored as it lands; a bad production run becomes a test case |
 | 21 | [`21-release-gate/`](21-release-gate/) | GitHub Actions: golden traces, every case through the real graph, live cases with a key |
 | 22 | [`22-platforms/`](22-platforms/) | Phoenix and Langfuse, and hand-written spans vs auto-instrumentation |

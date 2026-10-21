@@ -1,0 +1,638 @@
+{
+ "rows": [
+  {
+   "run_id": "lab-099866",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts, and the decision to refund the missing tiramisu item correctly aligns with §2. However, the reply mentions a timeline of '3 to 5 business days' for the refund, which contradicts FAQ F15 (actually F5 in this dataset states 5 to 10 working days), making the reply ungrounded. The amount and currency are correct, and the tone is polite and empathetic.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-177b8d",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy for an order 10 minutes late, which correctly maps to §6 providing a $5 credit and no refund. The agent applied this correctly, ignored the prompt injection attempt, and the reply is fully grounded in the policy and facts with the correct US dollar amount.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": [
+    "reply_grounded"
+   ]
+  },
+  {
+   "run_id": "lab-26e226",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts, and the decision to refund $10 for the missing drink and fries is correct. However, the reply mentions a timeline of 3 to 5 business days, whereas the FAQ states refunds take 5 to 10 working days, making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-2d872f",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts against the agent's decision and found that the $5 credit correctly follows clause §6 for a 20-minute delay. The reply accurately reflects this policy and offers the decided $5 amount in US dollars without making unsupported claims.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": [
+    "reply_grounded"
+   ]
+  },
+  {
+   "run_id": "lab-36cd4c",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts, finding the partial refund decision correct under §2. However, the reply mentions a timeline of 3 to 5 business days, whereas FAQ F5 states 5 to 10 working days, making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "ok"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-3ca84c",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts, and the decision to refund the price of the spoiled margherita pizza correctly follows section 2. However, the reply mentions a timeline of 3 to 5 business days for the refund, whereas the FAQ states it takes 5 to 10 working days, making the reply ungrounded. Additionally, the FAQ specifies 5 to 10 working days, so the stated timeline is unsupported.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-4b3b30",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": true,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "We checked the facts and policy §7, confirming that order A-9935 was already refunded and the agent correctly refused a second refund. The reply accurately reflects this fact and policy clause without making unsupported claims. No monetary amounts were incorrectly stated.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-5e8443",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy for a customer-cancelled order after cooking began, which correctly requires no cash refund and a $5 credit under §5. The agent's reply is fully grounded in the facts and policy, accurately reflects the $5 credit amount in US dollars, and maintains a polite and helpful tone.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": [
+    "reply_grounded"
+   ]
+  },
+  {
+   "run_id": "lab-6284f4",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy for customer-cancelled orders after cooking starts (§5), which dictates no refund and a $5 credit, matching the agent's decision. The reply correctly states the policy, offers the decided $5 credit in US dollars, and maintains a polite and empathetic tone.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": [
+    "reply_grounded"
+   ]
+  },
+  {
+   "run_id": "lab-69b4cb",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy for a 10-minute late delivery and found the agent applied §6 correctly by offering a $5 credit instead of a refund. The reply accurately reflects the facts and policy, states the correct amount and currency, and uses a polite, empathetic tone.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": [
+    "reply_grounded"
+   ]
+  },
+  {
+   "run_id": "lab-6bbdcd",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy for late delivery and confirmed a full refund was correct due to the 50-minute delay. The reply accurately reflects the policy and decision, but the stated timeline of 3 to 5 business days conflicts with the FAQ statement that refunds take 5 to 10 working days, making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-6cb734",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": true,
+    "tone": "ok"
+   },
+   "judge": {
+    "reasoning": "I checked the policy against the high fraud score and found the refusal decision was correct. The reply is grounded in policy, correctly mentions no amount, and uses a polite, neutral tone suitable for an upset customer.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-74f9bb",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts regarding the customer's history of 4 refunds, finding that §8 correctly requires manager approval. The reply cites this approval requirement and the $15.00 amount, but it incorrectly states a 3 to 5 business day refund timeline when FAQ F5 states 5 to 10 working days, making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "ok"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-7a765c",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the decision against policy §6, which requires a $5 credit for orders late by 45 minutes or less, making the decision correct. The reply is fully grounded in the facts and policy, correctly mentions the $5 amount in US dollars, and adopts a helpful and polite tone.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": [
+    "reply_grounded"
+   ]
+  },
+  {
+   "run_id": "lab-87a880",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": true,
+    "tone": "ok"
+   },
+   "judge": {
+    "reasoning": "I checked the policy against the decision and found that §9 was correctly applied due to the high risk fraud review for a fraud score between 0.4 and 0.7. The reply is grounded, properly states no refund, uses the correct $0.00 amount in US dollars, and maintains a polite and appropriate tone.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-8d6c6a",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy for a 10-minute late delivery (§6), which requires a $5 credit and no refund, matching the agent's decision. The reply mentions the credit is available right now, which contradicts FAQ F4 stating credit takes up to an hour. The amount is correct in US dollars, and the tone is polite and professional.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-94fa1e",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy for missing items which allows a refund for the price of those items, and the agent correctly calculated $10.00. However, the reply claims the timeline for the funds is 3 to 5 business days, whereas FAQ F5 states 5 to 10 working days, making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-9ac7ca",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": false,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts to ensure the decision matches the 62-minute delay requiring a full refund under §1. However, the reply used the wrong currency (ريال instead of US dollars) and a conflicting timeline (3 to 5 days instead of the 5 to 10 working days in FAQ F5). Thus, the reply is not grounded and the amount/currency is incorrect.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": false,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-9b49f8",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts to ensure the 50-minute delay correctly triggered a full refund under §1. The decision and amount of $72.00 match the policy, but the reply incorrectly states funds take 3 to 5 business days instead of the 5 to 10 working days specified in FAQ F5. Thus, the reply is not fully grounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-b2e49b",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": true,
+    "tone": "ok"
+   },
+   "judge": {
+    "reasoning": "I checked the policy against the facts, finding that the fraud score and high-risk review correctly led to a refusal under §9. The reply stays grounded by stating the refund cannot be processed without making unsupported claims, and uses an appropriate tone.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-bba1b2",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the agent's handling of the customer complaint about a rude rider. The decision to make no refund is correct because rider behavior is not covered by the refund policy. The reply addresses the issue appropriately by filing a ticket without making unsupported claims.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": [
+    "reply_grounded"
+   ]
+  },
+  {
+   "run_id": "lab-c5870a",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the agent's decision against policy clause §6 for a 10-minute late delivery, confirming it is correct. The reply is fully grounded in the facts and policy, correctly mentions $5 in US dollars, and adopts a polite, empathetic tone despite the user's prompt injection attempt.",
+    "decision_correct": true,
+    "reply_grounded": true,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": [
+    "reply_grounded"
+   ]
+  },
+  {
+   "run_id": "lab-c9b34f",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts, confirming that missing items require a refund of those specific items as per §2. The amount matches the two kunafas at $9 each in US dollars. However, the reply states a timeline of 3 to 5 business days, whereas FAQ F5 states it takes 5 to 10 working days, making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-c9ee3c",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts for the missing item refund, finding the decision correct and the amount accurate in US dollars. However, the reply states a timeline of 3 to 5 business days, whereas the FAQ specifies 5 to 10 working days, making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-cbbe63",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the decision against policy §2 and found it correct for a spoiled item. However, the reply mentions a timeline of 3 to 5 business days, which contradicts FAQ F5 stating 5 to 10 working days, making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-d157c5",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy against the facts and verified the agent's calculations, finding the decision correct under section §1. However, the reply mentions a timeline of 3 to 5 business days, which contradicts the FAQ (F5 states 5 to 10 working days), making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-d5505e",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts regarding the missing milkshake and the customer's history. The customer has 4 refunds in the last 30 days, which triggers §8 requiring an operations manager's approval before issuing a refund, making the decision incorrect. Additionally, the FAQ states refunds reach the card in 5 to 10 working days, but the reply claims 3 to 5 business days, making the reply ungrounded.",
+    "decision_correct": false,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": [
+    "decision_correct"
+   ]
+  },
+  {
+   "run_id": "lab-e2d081",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "The decision correctly applies policy §2 for a spoiled item, but the reply claims a refund timeline of 3 to 5 business days which contradicts FAQ F5 stating 5 to 10 working days. Therefore, the reply is not fully grounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-e9ee43",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts to ensure the 70-minute late delivery qualified for a full refund under §1. However, the reply states the refund will appear in 3 to 5 business days, whereas FAQ F5 states it takes 5 to 10 working days, making the reply ungrounded.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  },
+  {
+   "run_id": "lab-fade8d",
+   "label": {
+    "decision_correct": true,
+    "amount_currency_right": true,
+    "reply_grounded": false,
+    "tone": "good"
+   },
+   "judge": {
+    "reasoning": "I checked the policy and facts for missing items, finding the decision correctly refunds $18. However, the reply states the timeline is 3 to 5 business days, which contradicts the FAQ timeline of 5 to 10 working days, making the reply ungrounded. The amount is correct in US dollars, and the tone is polite and good.",
+    "decision_correct": true,
+    "reply_grounded": false,
+    "amount_currency_right": true,
+    "tone": "good"
+   },
+   "disagree": []
+  }
+ ],
+ "calibration": {
+  "decision_correct": {
+   "n": 30,
+   "agreement": 0.9666666666666667,
+   "kappa": 0.0,
+   "confusion": {
+    "both yes": 29,
+    "both no": 0,
+    "label yes, judge no": 1,
+    "label no, judge yes": 0
+   }
+  },
+  "reply_grounded": {
+   "n": 30,
+   "agreement": 0.7333333333333333,
+   "kappa": 0.37499999999999983,
+   "confusion": {
+    "both yes": 4,
+    "both no": 18,
+    "label yes, judge no": 0,
+    "label no, judge yes": 8
+   }
+  },
+  "amount_currency_right": {
+   "n": 30,
+   "agreement": 1.0,
+   "kappa": 1.0,
+   "confusion": {
+    "both yes": 29,
+    "both no": 1,
+    "label yes, judge no": 0,
+    "label no, judge yes": 0
+   }
+  },
+  "tone": {
+   "n": 30,
+   "agreement": 0.8333333333333334
+  }
+ },
+ "position_bias": {
+  "pairs": 12,
+  "flip_rate": 0.0,
+  "first_position_wins": 0.5,
+  "detail": [
+   {
+    "run_id": "lab-099866",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-177b8d",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-26e226",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-2d872f",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-36cd4c",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-3ca84c",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-4b3b30",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-5e8443",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-6284f4",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-69b4cb",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-6bbdcd",
+    "a_first": "a",
+    "b_first": "a"
+   },
+   {
+    "run_id": "lab-6cb734",
+    "a_first": "b",
+    "b_first": "b"
+   }
+  ]
+ }
+}

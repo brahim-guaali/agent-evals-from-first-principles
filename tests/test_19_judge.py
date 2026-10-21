@@ -14,7 +14,7 @@ def test_calibration_counts_agreement_and_the_kinds_of_disagreement():
     j = {"decision_correct": True, "reply_grounded": True, "amount_currency_right": True, "tone": "ok"}
     c = judge.calibrate([(h, j), (h, h)])
     assert c["decision_correct"]["agreement"] == 1.0
-    assert c["reply_grounded"]["confusion"]["person no, judge yes"] == 1 and c["reply_grounded"]["agreement"] == 0.5
+    assert c["reply_grounded"]["confusion"]["label no, judge yes"] == 1 and c["reply_grounded"]["agreement"] == 0.5
     assert c["tone"]["agreement"] == 1.0
 
 

@@ -1,13 +1,13 @@
 """An LLM judge, and how far to trust it (stage 19).
 
-The judge answers the same questions a person answers in the annotation queue (stage 17),
+The judge answers the same questions as the labels in the annotation queue (stage 17),
 from the same snapshot, so the two can be compared item by item. Before its verdicts count
-for anything, it's calibrated against those human labels: agreement and Cohen's kappa per
+for anything, it's calibrated against those labels: agreement and Cohen's kappa per
 question, and every disagreement goes back to the queue for a second look.
 
 Two known weaknesses of model judges get their own measurements here: position bias (asked
 which of two replies is better, does the answer flip when their order is swapped?) and the
-judge simply being wrong where a person is sure.
+judge simply being wrong where the labels are sure.
 """
 import json
 from typing import Literal
@@ -70,15 +70,15 @@ def kappa(pairs):
 
 
 def calibrate(items):
-    """items: (human labels, judge verdict dict). Per question: agreement, kappa, confusion."""
+    """items: (reference labels, judge verdict dict). Per question: agreement, kappa, confusion."""
     out = {}
     for q in QUESTIONS:
         pairs = [(bool(h[q]), bool(j[q])) for h, j in items if q in h and q in j]
         out[q] = {"n": len(pairs), "agreement": sum(a == b for a, b in pairs) / len(pairs) if pairs else None,
                   "kappa": kappa(pairs),
                   "confusion": {"both yes": sum(a and b for a, b in pairs), "both no": sum(not a and not b for a, b in pairs),
-                                "person yes, judge no": sum(a and not b for a, b in pairs),
-                                "person no, judge yes": sum(not a and b for a, b in pairs)}}
+                                "label yes, judge no": sum(a and not b for a, b in pairs),
+                                "label no, judge yes": sum(not a and b for a, b in pairs)}}
     tone = [(h["tone"], j["tone"]) for h, j in items if "tone" in h and "tone" in j]
     out["tone"] = {"n": len(tone), "agreement": sum(a == b for a, b in tone) / len(tone) if tone else None}
     return out

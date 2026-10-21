@@ -2,7 +2,7 @@
 
     make platform ; make collector
     python 17-annotation/run.py              # runs and queues them; then label at http://127.0.0.1:8710/ui/annotate
-    python 17-annotation/run.py --report     # once labelled: what the labels say
+    python 17-annotation/run.py --report     # once labelled: what the labels say (reference labels by default)
 """
 import collections
 import sys
@@ -39,11 +39,11 @@ def fill(platform):
     print(f"\n  {len(items)} runs in the queue: label them at {PLATFORM}/ui/annotate")
 
 
-def report():
-    rows = httpx.get(f"{PLATFORM}/annotations/export", params={"annotator": "brahim"}).json()
+def report(annotator):
+    rows = httpx.get(f"{PLATFORM}/annotations/export", params={"annotator": annotator}).json()
     if not rows:
         sys.exit("  no labels yet")
-    print(f"=== {len(rows)} runs labelled by brahim ===")
+    print(f"=== {len(rows)} runs labelled by {annotator!r} ===")
     for k in ("decision_correct", "reply_grounded", "amount_currency_right"):
         yes = sum(r["labels"][k] for r in rows)
         print(f"  {k:<24} yes {yes:>3} · no {len(rows) - yes:>3}")
@@ -56,7 +56,7 @@ def report():
 
 if __name__ == "__main__":
     if "--report" in sys.argv:
-        report()
+        report(sys.argv[sys.argv.index("--annotator") + 1] if "--annotator" in sys.argv else "reference")
     else:
         p = Platform()
         p.check()

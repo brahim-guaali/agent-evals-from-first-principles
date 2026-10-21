@@ -1,0 +1,44 @@
+=== The judge reads the 30 runs labelled by 'reference' ===
+  lab-099866   agree
+  lab-177b8d   DISAGREE on reply_grounded · judge: I checked the policy for an order 10 minutes late, which correctly maps to §6 providing a $5 credit and no ref
+  lab-26e226   agree
+  lab-2d872f   DISAGREE on reply_grounded · judge: I checked the policy and facts against the agent's decision and found that the $5 credit correctly follows cla
+  lab-36cd4c   agree
+  lab-3ca84c   agree
+  lab-4b3b30   agree
+  lab-5e8443   DISAGREE on reply_grounded · judge: I checked the policy for a customer-cancelled order after cooking began, which correctly requires no cash refu
+  lab-6284f4   DISAGREE on reply_grounded · judge: I checked the policy for customer-cancelled orders after cooking starts (§5), which dictates no refund and a $
+  lab-69b4cb   DISAGREE on reply_grounded · judge: I checked the policy for a 10-minute late delivery and found the agent applied §6 correctly by offering a $5 c
+  lab-6bbdcd   agree
+  lab-6cb734   agree
+  lab-74f9bb   agree
+  lab-7a765c   DISAGREE on reply_grounded · judge: I checked the decision against policy §6, which requires a $5 credit for orders late by 45 minutes or less, ma
+  lab-87a880   agree
+  lab-8d6c6a   agree
+  lab-94fa1e   agree
+  lab-9ac7ca   agree
+  lab-9b49f8   agree
+  lab-b2e49b   agree
+  lab-bba1b2   DISAGREE on reply_grounded · judge: I checked the agent's handling of the customer complaint about a rude rider. The decision to make no refund is
+  lab-c5870a   DISAGREE on reply_grounded · judge: I checked the agent's decision against policy clause §6 for a 10-minute late delivery, confirming it is correc
+  lab-c9b34f   agree
+  lab-c9ee3c   agree
+  lab-cbbe63   agree
+  lab-d157c5   agree
+  lab-d5505e   DISAGREE on decision_correct · judge: I checked the policy and facts regarding the missing milkshake and the customer's history. The customer has 4 
+  lab-e2d081   agree
+  lab-e9ee43   agree
+  lab-fade8d   agree
+
+=== Calibration: the judge against 'reference' ===
+  factual questions (labels from the known right answers)
+    decision_correct         agreement 97% · kappa n/a (every reference label is the same) · {'both yes': 29, 'both no': 0, 'label yes, judge no': 1, 'label no, judge yes': 0}
+    amount_currency_right    agreement 100% · kappa 1.00 · {'both yes': 29, 'both no': 1, 'label yes, judge no': 0, 'label no, judge yes': 0}
+  judgement questions (labels from a second model with a written rubric)
+    reply_grounded           agreement 73% · kappa 0.37 · {'both yes': 4, 'both no': 18, 'label yes, judge no': 0, 'label no, judge yes': 8}
+    tone                     agreement 83% (n=30)
+  9 disagreements sent back to the queue for a second look
+
+=== Position bias: which reply is better, asked twice with the order swapped ===
+  12 pairs (the original reply vs one written by compose v2): the judge changed its mind in 0% of pairs; the reply shown first won 50% of the time
+  usage: 66 model calls (66× gemini-3.5-flash-lite), 36,261 tokens in, 5,340 out, ~$0.0242

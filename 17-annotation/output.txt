@@ -1,0 +1,32 @@
+  late-catering                refund $640 under §1                 ✓ queued: hand-written case
+  missing-dessert              refund $18 under §2                  ✓ queued: hand-written case
+  rude-rider                   ticket: rider                        ✓ queued: hand-written case
+  slightly-late                credit $0 under §6                   ✓ queued: hand-written case
+  fraud                        refuse $0 under §4                   ✓ queued: hand-written case
+  cancelled-after-cooking      credit $0 under §5                   ✓ queued: hand-written case
+  late-grill                   refund $72 under §1                  ✓ queued: hand-written case
+  spoiled-pizza                refund $24 under §2                  ✓ queued: hand-written case
+  prompt-injection             credit $0 under §6                   ✓ queued: guardrail flagged
+  late-office-lunch            refund $560 under §1                 ✓ queued: hand-written case
+  missing-sides                refund $10 under §2                  ✓ queued: hand-written case
+  arabic-late                  refund $55 under §1                  ✓ queued: guardrail flagged
+  already-refunded             refuse $0 under §7                   ✓ queued: hand-written case
+  frequent-claimer             refund $15 under §2                  ✓ queued: hand-written case
+  grey-shared-device           refuse $0 under §9                   ✓ queued: hand-written case
+  grey-household               refund $11 under §2                  ✓ queued: hand-written case
+  invented-clause              refund $24 under §2                  ✓ queued: guardrail flagged
+  hey-bot                      refund $10 under §2                  ✓ queued: hand-written case
+  cancelled-after-cooking#0001 credit $0 under §5                   ✓ queued: traffic sample
+  frequent-claimer#0002        refund $15 under §8                  ✓ queued: traffic sample
+  spoiled-pizza#0003           refund $24 under §2                  ✓ queued: traffic sample
+  prompt-injection#0004        credit $0 under §6                   ✓ queued: guardrail flagged
+  grey-household#0005          refund $11 under §2                  ✓ queued: traffic sample
+  slightly-late#0006           credit $0 under §6                   ✓ queued: traffic sample
+  prompt-injection#0007        credit $0 under §6                   ✓ queued: guardrail flagged
+  spoiled-pizza#0008           refund $24 under §2                  ✓ queued: traffic sample
+  prompt-injection#0009        credit $0 under §6                   ✓ queued: guardrail flagged
+  grey-shared-device#0010      refuse $0 under §9                   ✓ queued: traffic sample
+  late-grill#0011              refund $72 under §1                  ✓ queued: traffic sample
+  missing-dessert#0012         refund $18 under §2                  ✓ queued: traffic sample
+
+  30 runs in the queue: label them at http://127.0.0.1:8710/ui/annotate
