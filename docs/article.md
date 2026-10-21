@@ -1,4 +1,4 @@
-# My AI agent's traces showed everything. Then I needed a referee
+# Your AI agent needs a referee, not better prompts
 
 *Part 4 of 4 in **Building an AI agent from first principles**. [Part 1](https://medium.com/@brahimg/i-rebuilt-one-ai-agent-seven-times-to-understand-graph-engineering-80b9983cd921) built a refund agent as a graph, [part 2](https://github.com/brahim-guaali/production-agent-from-first-principles) took it to production and [part 3](https://github.com/brahim-guaali/agent-observability-from-first-principles) gave it a camera. This part decides whether what the camera sees is any good. Real model, real code, real numbers; every image comes from a recorded run.*
 
