@@ -1,0 +1,4 @@
+=== The frequent claimer, a fresh run: {'action': 'refund', 'amount': 15.0, 'approval': True} · manager_approval='approved' ===
+  without the approval   decision_correct: 0/3 yes
+  with the approval      decision_correct: 3/3 yes
+  usage: 6 model calls (6× gemini-3.5-flash-lite), 5,517 tokens in, 669 out, ~$0.0033

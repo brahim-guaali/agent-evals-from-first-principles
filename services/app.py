@@ -123,7 +123,7 @@ async def get_order(order_id: str):
 @app.get("/policy")
 async def get_policy():
     await _slow("policy")
-    return {"version": data.POLICY_VERSION, "clauses": data.POLICY}
+    return {"version": data.POLICY_VERSION, "clauses": data.POLICY, "faq": data.FAQ}
 
 
 def _words(text):

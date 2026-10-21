@@ -44,3 +44,9 @@ def test_a_bad_run_becomes_a_case_with_its_message_order_and_expectations(platfo
     assert case["source_trace"] == tid and curate.load(tmp_path / "curated.jsonl")[0]["id"] == case["id"]
     assert curate.reply_problems(case, "تم استرداد 55 ريال") == ["names a currency other than US dollars"]
     assert curate.reply_problems(case, "We refunded $55.00") == []
+
+
+def test_a_curated_case_can_require_the_faqs_timelines():
+    case = {"expect_reply": {"timelines": "faq"}}
+    assert curate.reply_problems(case, "Refund $24, in 3 to 5 business days.")
+    assert not curate.reply_problems(case, "Refund $24, in 5 to 10 working days.")

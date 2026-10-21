@@ -3,7 +3,12 @@
 Each check is a plain function: it gets the run's spans (and, where it needs one, the run's
 own record from the traffic log) and returns (passed, explanation), or None when it doesn't
 apply. No model involved: these are the referee's rules that never need judgement.
+
+One check reads the reply's words instead (stage 17's labels): the timelines it names. Traces
+don't carry the reply (message bodies are off, stage 11), so it runs where the text is: the
+release gate's live layer, curated cases and annotation snapshots.
 """
+import re
 
 SLO_S, BUDGET_USD, MAX_DECIDE = 60.0, 0.003, 3
 
@@ -109,3 +114,42 @@ def evaluate(spans, record=None):
         if result is not None:
             out[check.__name__] = {"passed": result[0], "explanation": result[1]}
     return out
+
+
+# Timelines in a reply: "5 to 10 working days", "within an hour", "right now". Each becomes
+# (low, high, unit), "now" for an immediate promise. Times that describe the order ("62 minutes
+# late") aren't promises. Arabic: day ranges and "now".
+WORDS = {"a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7,
+         "eight": 8, "nine": 9, "ten": 10}
+N = r"(\d+|an?|one|two|three|four|five|six|seven|eight|nine|ten)"
+SPAN = rf"\b(?:{N}\s*(?:to|-|–|or)\s*)?{N}\s+(?:business\s+|working\s+)?(minute|hour|day|week|month)s?\b"
+PROMISE = re.compile(SPAN + r"(?!\s+(?:late|after|behind|past|ago|early|over))", re.IGNORECASE)
+ANY = re.compile(SPAN, re.IGNORECASE)
+NOW = re.compile(r"\b(?:right now|right away|immediately|instantly|straight away|at once|ready to use|available now)\b"
+                 r"|فورا|فوراً|على الفور|الآن", re.IGNORECASE)
+AR_DAYS = re.compile(r"(\d+)\s*(?:(?:إلى|الى|-|–|و)\s*(\d+)\s*)?(?:أيام|يوم)")
+
+
+def timelines(text, spans=PROMISE):
+    text = (text or "").translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    num = lambda w: int(w) if w.isdigit() else WORDS[w.lower()]   # noqa: E731
+    out = [(num(lo or hi), num(hi), unit.lower(), m.group(0)) for m in spans.finditer(text)
+           for lo, hi, unit in [m.groups()]]
+    out += [(int(lo), int(hi or lo), "day", m.group(0)) for m in AR_DAYS.finditer(text) for lo, hi in [m.groups()]]
+    out += [(0, 0, "now", m.group(0)) for m in NOW.finditer(text)]
+    return out
+
+
+def timelines_from_faq(text, sources=None):
+    """Every time the reply names is one the FAQ (or the policy) gives: "3 to 5 business days"
+    isn't, F5 says 5 to 10 working days. None when the reply names no time."""
+    if sources is None:
+        from services.data import FAQ, POLICY
+        sources = list(FAQ.values()) + list(POLICY.values())
+    allowed = {t[:3] for s in sources for t in timelines(s, ANY)}
+    found = timelines(text)
+    if not found:
+        return None
+    wrong = [t[3] for t in found if t[:3] not in allowed]
+    return not wrong, (f"not in the FAQ: {', '.join(repr(w) for w in wrong)}" if wrong
+                       else f"{len(found)} timeline(s), all from the FAQ")

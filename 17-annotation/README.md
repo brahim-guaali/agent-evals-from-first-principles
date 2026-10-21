@@ -42,6 +42,8 @@ What the labels found:
 
 Full report: [`output-report.txt`](output-report.txt).
 
+Fixed since: the reply prompt gets the FAQ entry for its decision, and a deterministic check guards the timelines in the release gate ([20](../20-online-evals/#a-second-curated-case-timelines-the-faq-doesnt-give-2026-10-22)); the snapshot records the manager's approval ([19](../19-judge/)).
+
 ## Where it breaks
 
 Labelling 30 runs is an afternoon; labelling every run is impossible. A model that answers the same four questions could read every run, but only if it agrees with the labels. Next: [19 · the judge](../19-judge/), and how far to trust it.

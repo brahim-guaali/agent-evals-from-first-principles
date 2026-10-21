@@ -53,6 +53,7 @@ class ScriptedStructured:
         """Streams REPLY piece by piece; stops when on_chunk returns False (the customer left)."""
         self.usage.calls += 1
         self.stream_systems = getattr(self, "stream_systems", []) + [system]
+        self.stream_prompts = getattr(self, "stream_prompts", []) + [prompt]
         text, chunks = "", 0
         for piece in self.REPLY:
             text, chunks = text + piece, chunks + 1

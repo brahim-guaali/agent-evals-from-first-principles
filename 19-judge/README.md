@@ -38,6 +38,13 @@ What the run taught:
 
 **How strong is this evidence?** The factual labels are real reference labels. The judgement labels come from another model, so a 73% agreement there is one model against another, weaker than agreement with people. A person-labelled set (the same queue, `--annotator <name>`) is the next step before the judge's grounding and tone verdicts are trusted on their own.
 
+**The approval, added (2026-10-22).** The snapshot now carries `manager_approval` ([`agentkit/annotation.py`](../agentkit/annotation.py)), the judge's prompt says a §3 or §8 refund is right once a manager approved it, and the queue page shows it. A fresh frequent-claimer run (refund $15, approved), judged three times each way (`python 19-judge/run.py --approval`, [`output-approval.txt`](output-approval.txt)):
+
+| snapshot | judge says the decision is correct |
+|---|---|
+| without the approval (as in stage 17) | 0 of 3 |
+| with the approval | 3 of 3 |
+
 Full output: [`output.txt`](output.txt), every verdict in [`data/judge.json`](data/judge.json).
 
 ## Where it breaks

@@ -11,8 +11,9 @@ Three layers, cheapest first:
                   that gives each case the right judgments. The model is fixed, so a failure here
                   is the *code* getting worse: a routing rule, a threshold, a check removed.
 3. live cases     The case set and the curated cases on the real model, against a stored
-                  baseline: accuracy may not drop, curated cases must pass, cost and latency
-                  must stay in budget. Prompt and model changes are caught here.
+                  baseline: accuracy may not drop, curated cases must pass, every reply names
+                  only the FAQ's timelines, cost and latency must stay in budget. Prompt and
+                  model changes are caught here.
 
 Exit code 1 if any layer fails; a markdown summary goes to $GITHUB_STEP_SUMMARY when set.
 """
@@ -112,15 +113,18 @@ def live():
     from agentkit.platform import Platform
     from agentkit.runner import outcome, run_case
     from evals import curate
+    from evals.checks import timelines_from_faq
     base = json.loads(BASELINE.read_text())
-    platform, rows, cost, slow = Platform(), [], 0.0, 0
+    platform, rows, cost, slow, timed = Platform(), [], 0.0, 0, []
     platform.check()
     for case in CASES:
         platform.reset()
         r = run_case(case, platform, "21 · gate", prefix="gate")
-        rows.append((case["id"], outcome(r) == case["expect"], outcome(r)))
+        why = r["state"].get("reply", {}).get("why")              # an escalation says why
+        rows.append((case["id"], outcome(r) == case["expect"], outcome(r) | ({"why": why} if why else {})))
         cost += r["usage"].cost
         slow += r["seconds"] > base["max_seconds"]
+        timed.append((case["id"], timelines_from_faq(r["state"].get("reply", {}).get("text"))))
     for case in curate.load():
         platform.reset()
         if case.get("order"):
@@ -128,9 +132,14 @@ def live():
         r = run_case({"customer": case["customer"], "message": case["message"]}, platform, "21 · gate", prefix="gate")
         problems = curate.reply_problems(case, r["state"].get("reply", {}).get("text"))
         rows.append((case["id"], outcome(r) == case["expect"] and not problems, problems or outcome(r)))
-    right = sum(ok for _, ok, _ in rows[:len(CASES)])
+        timed.append((case["id"], timelines_from_faq(r["state"].get("reply", {}).get("text"))))
+    right, curated_ok = sum(ok for _, ok, _ in rows[:len(CASES)]), all(ok for _, ok, _ in rows[len(CASES):])
+    wrong_times = [(name, t[1]) for name, t in timed if t and not t[0]]
+    rows += [(name, False, f"reply {detail}") for name, detail in wrong_times]
     gates = [("accuracy", right >= base["min_correct"], f"{right}/{len(CASES)} (baseline {base['min_correct']})"),
-             ("curated cases", all(ok for _, ok, _ in rows[len(CASES):]), f"{len(rows) - len(CASES)} curated"),
+             ("curated cases", curated_ok, f"{len(timed) - len(CASES)} curated"),
+             ("timelines from the FAQ", not wrong_times,
+              f"{len(wrong_times)} of {sum(t is not None for _, t in timed)} replies that name a time name one the FAQ doesn't"),
              ("cost per run", cost / len(CASES) <= base["max_cost_per_run"],
               f"${cost / len(CASES):.5f} (limit ${base['max_cost_per_run']})"),
              ("slow runs", slow <= base["max_slow"], f"{slow} over {base['max_seconds']} s (limit {base['max_slow']})")]

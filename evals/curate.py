@@ -29,18 +29,37 @@ def promote(platform, trace_id, expect, expect_reply=None, note="", case_id=None
     return case
 
 
+def from_annotation(platform, item, expect, expect_reply=None, note="", case_id=None, path=CURATED):
+    """A labelled run (stage 17) as a case: the message from its snapshot, the order and the
+    customer from the platform's records."""
+    s = item["snapshot"]
+    order = httpx.get(f"{platform}/orders/{s['order']['order_id']}").json()
+    case = {"id": case_id or f"curated-{item['run_id']}", "customer": order["customer"], "message": s["message"],
+            "expect": expect, "expect_reply": expect_reply or {}, "order": order,
+            "source_annotation": item["run_id"], "note": note}
+    with Path(path).open("a") as f:
+        f.write(json.dumps(case, ensure_ascii=False) + "\n")
+    return case
+
+
 def load(path=CURATED):
     p = Path(path)
     return [json.loads(line) for line in p.read_text().splitlines() if line.strip()] if p.exists() else []
 
 
 def reply_problems(case, reply_text):
-    """Checks a curated case can set on the reply: currency, words that must or mustn't appear."""
+    """Checks a curated case can set on the reply: currency, timelines only from the FAQ, words
+    that must appear."""
     out, exp, text = [], case.get("expect_reply") or {}, reply_text or ""
     from agent.guardrails import OTHER_CURRENCIES
     import re
     if exp.get("currency") == "USD" and re.search(OTHER_CURRENCIES, text, re.IGNORECASE):
         out.append("names a currency other than US dollars")
+    if exp.get("timelines") == "faq":
+        from evals.checks import timelines_from_faq
+        found = timelines_from_faq(text)
+        if found and not found[0]:
+            out.append(f"names a time {found[1]}")
     for word in exp.get("must_include", []):
         if word not in text:
             out.append(f"doesn't include {word!r}")

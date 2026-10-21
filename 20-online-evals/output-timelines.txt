@@ -1,0 +1,11 @@
+=== 1. The timeline check on stage 17's 30 labelled replies ===
+  labelled grounded      check passed   4
+  labelled not grounded  check flagged  25
+  labelled not grounded  check passed   1
+
+=== 2. One of them as a curated case: the message from the snapshot, the order from the platform ===
+  curated-refund-timeline: "Order A-8120 came without the two kunafa. Can I get my money back for them?" · expect {'action': 'refund', 'amount': 18, 'approval': False} · timelines from the FAQ · from labelled run lab-c9b34f
+
+=== 3. The case on compose v2 (no FAQ) and v3 (the FAQ entry for the decision), five times each ===
+  compose v2: 5/5 replies fail the case ([("names a time not in the FAQ: '3 to 5 business days'", 4), ("names a time not in the FAQ: '3-5 business days'", 1)])
+  compose v3: 0/5 replies fail the case

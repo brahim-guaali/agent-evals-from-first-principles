@@ -251,7 +251,8 @@ def build(llm, platform, tracer=NullTracer(), db=DB):
             from agent.experiments import text
             system = text("compose", s["prompt_versions"])
         out = judgments.compose(llm, s["request"]["message"], s["decision"],
-                                lambda piece: platform.push_chunk(sid, run_id(config), next(seq), piece), system)
+                                lambda piece: platform.push_chunk(sid, run_id(config), next(seq), piece), system,
+                                judgments.faq_for(s["decision"], s["policy"].get("faq")))
         return out, llm.usage.cost - before
 
     def reply(s, config):

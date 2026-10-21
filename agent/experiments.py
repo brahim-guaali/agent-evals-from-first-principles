@@ -11,16 +11,17 @@ from dataclasses import dataclass, field
 
 from agentkit import judgments
 
-COMPOSE_V2 = judgments.COMPOSE        # the default since part 4
+COMPOSE_V2 = judgments.COMPOSE_V2     # the default in part 4 until the stage 17 labels
+COMPOSE_V3 = judgments.COMPOSE        # v2 plus the FAQ's timelines, the default since then
 
 PROMPTS = {
-    "compose": {"v1": judgments.COMPOSE_V1, "v2": COMPOSE_V2},
+    "compose": {"v1": judgments.COMPOSE_V1, "v2": COMPOSE_V2, "v3": COMPOSE_V3},
 }
 
 
 def text(name, versions):
-    """The prompt text for a run: its pinned version, or v2 (the default since part 4)."""
-    return PROMPTS[name][(versions or {}).get(name, "v2")]
+    """The prompt text for a run: its pinned version, or v3 (the default)."""
+    return PROMPTS[name][(versions or {}).get(name, "v3")]
 
 
 @dataclass

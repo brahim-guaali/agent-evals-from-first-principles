@@ -3,6 +3,7 @@
     make platform
     python 19-judge/run.py                       # against the reference labels (17-annotation/labels/)
     python 19-judge/run.py --annotator brahim    # against a person's labels from the queue
+    python 19-judge/run.py --approval            # the frequent claimer, judged with and without the manager's yes
 
 Reported apart: the factual questions (labels from the known right answers) and the judgement
 questions (labels from a second model with a written rubric, weaker evidence than a person's).
@@ -83,6 +84,29 @@ def main(annotator):
     print(f"  usage: {llm.usage}")
 
 
+def approval(times=3):
+    """Stage 19 found the judge calling the frequent claimer's refund wrong: §8 needs a manager,
+    and the snapshot didn't say one approved. Now it does (agentkit/annotation.py)."""
+    from agentkit.annotation import snapshot
+    from agentkit.cases import CASES
+    from agentkit.runner import outcome, run_case
+    platform = Platform()
+    platform.reset()
+    case = next(c for c in CASES if c["id"] == "frequent-claimer")
+    r = run_case(case, platform, "19 · judge", prefix="lab")
+    snap = snapshot(r["state"], r["run_id"])
+    print(f"=== The frequent claimer, a fresh run: {outcome(r)} · manager_approval={snap['manager_approval']!r} ===")
+    llm = Gemini()
+    for label, s in (("without the approval", {k: v for k, v in snap.items() if k != "manager_approval"}),
+                     ("with the approval", snap)):
+        votes = [judge.judge(llm, s).decision_correct for _ in range(times)]
+        print(f"  {label:<22} decision_correct: {sum(votes)}/{times} yes")
+    print(f"  usage: {llm.usage}")
+
+
 if __name__ == "__main__":
     Platform().check()
+    if "--approval" in sys.argv:
+        approval()
+        sys.exit()
     main(sys.argv[sys.argv.index("--annotator") + 1] if "--annotator" in sys.argv else "reference")

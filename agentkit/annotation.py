@@ -21,6 +21,9 @@ def snapshot(state, run_id):
         "fraud_score": (state.get("fraud") or {}).get("score"),
         "history": {k: (state.get("history") or {}).get(k) for k in ("refunds_30d", "refunded_orders")},
         "fraud_review": state.get("fraud_review"),
+        # §3 and §8 refunds go through only after a manager says yes (stage 19: without this, the
+        # judge saw a frequent claimer's refund under §2 and called the decision wrong)
+        "manager_approval": state.get("approval"),
         "explanation": reply.get("explanation"),
         "failures": state.get("failures") or [],
         "guardrails": [g for g in state.get("guardrails") or [] if g.get("verdict") == "flagged"],

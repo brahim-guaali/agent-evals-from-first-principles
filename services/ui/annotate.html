@@ -57,6 +57,7 @@ async function load() {
   <div class="card"><h2>What the agent knew and decided</h2><div class="kv">
     <div>decision</div><div>${s.path === "decided" ? `${esc(d.action)} $${d.amount ?? 0} · ${esc(clause)}` : esc(s.path)}</div>
     <div>reason</div><div>${esc(d.reason)}</div>
+    ${s.manager_approval ? `<div>manager</div><div>${esc(s.manager_approval)}</div>` : ""}
     <div>order</div><div>${o.order_id ? `${esc(o.order_id)} · $${o.total} · ${o.minutes_late} min late · ${esc(o.status)}<br>${(o.items || []).map(i => `${esc(i.name)} $${i.price}${i.qty > 1 ? " ×" + i.qty : ""}`).join(", ")}` : "–"}</div>
     <div>fraud score</div><div>${s.fraud_score ?? "–"}${s.fraud_review ? ` · review: ${esc(s.fraud_review.risk)}` : ""}</div>
     <div>history</div><div>${s.history.refunds_30d ?? 0} refunds in 30 days${(s.history.refunded_orders || []).length ? ` · already refunded: ${esc(s.history.refunded_orders.join(", "))}` : ""}</div>

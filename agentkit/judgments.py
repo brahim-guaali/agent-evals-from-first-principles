@@ -67,19 +67,39 @@ customer's language. The decision is final: state it, the amount if any, and the
 plain words, then what happens next (when refunds or credit arrive). Warm, short paragraphs,
 no more than 90 words. Don't promise anything the decision doesn't say."""
 
-# Compose v2, the default since part 4: 15% cheaper in the A/B test (part 3, stage 16) and it
-# passes the curated currency case that v1 failed 5 times out of 5 (stage 20).
-COMPOSE = """You write the reply a food-delivery app's support sends to a customer, in the
+# Compose v2, the default in part 4 until stage 17: 15% cheaper in the A/B test (part 3, stage 16)
+# and it passes the curated currency case that v1 failed 5 times out of 5 (stage 20).
+COMPOSE_V2 = """You write the reply a food-delivery app's support sends to a customer, in the
 customer's language. Start with the outcome and the amount, then the reason in one sentence,
 then when the money or credit arrives. At most 60 words. Amounts are always in US dollars:
 write them with a $ sign, whatever the customer's language, and never name another currency.
 Don't promise anything the decision doesn't say."""
 
+# Compose v3, the default since the stage 17 labels: v2 never saw the FAQ, so 26 of 30 replies
+# said when the money arrives in words nobody gave them ("3 to 5 business days"; the FAQ says
+# 5 to 10 working days). Now the FAQ entries for the decision come with the facts.
+COMPOSE = """You write the reply a food-delivery app's support sends to a customer, in the
+customer's language. Start with the outcome and the amount, then the reason in one sentence,
+then when the money or credit arrives: only the time the FAQ entries given state, told to the
+customer ("your card", "your wallet"); if none is given, name no time. At most 60 words. Amounts are always in US dollars: write them with a $ sign,
+whatever the customer's language, and never name another currency.
+Don't promise anything the decision or the FAQ doesn't say."""
 
-def compose(llm, message, decision, on_chunk, system=None):
+# The FAQ entries a reply may need for each kind of decision: when the money or the credit arrives.
+FAQ_FOR = {"refund": ("F5",), "credit": ("F4",)}
+
+
+def faq_for(decision, faq):
+    return {k: faq[k] for k in FAQ_FOR.get((decision or {}).get("action"), ()) if k in (faq or {})}
+
+
+def compose(llm, message, decision, on_chunk, system=None, faq=None):
     """Stage 04: the customer reply, streamed piece by piece as the model writes it.
-    `system` lets an experiment pick another version of the prompt (stage 16)."""
+    `system` lets an experiment pick another version of the prompt (stage 16); `faq` holds the
+    FAQ entries the reply may quote (stage 17's labels: without them it made timelines up)."""
     facts = {"customer_message": message, "decision": decision}
+    if faq:
+        facts["faq"] = faq
     return llm.stream(system or COMPOSE, json.dumps(facts, ensure_ascii=False, indent=1), on_chunk)
 
 

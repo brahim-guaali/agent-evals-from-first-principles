@@ -39,6 +39,28 @@ Per minute, all checks together: 100%, 100%, 92%. The spend check (stage 18) is 
 
 The stage 16 A/B test couldn't prove the fix on live traffic (1 slip in 29 against none in 31). A curated case, aimed at the one place it goes wrong, proved it in ten calls. The case now runs in the release gate's live layer (stage 21), so the riyals can't come back unnoticed. And v2 is now the reply prompt every run uses ([`agentkit/judgments.py`](../agentkit/judgments.py); v1 stays as `COMPOSE_V1` for the A/B arm): the A/B said it was cheaper, this case says it fixes the currency.
 
+## A second curated case: timelines the FAQ doesn't give (2026-10-22)
+
+Stage 17's labels found 26 of 30 replies saying something nobody told them, most of it timelines: "3 to 5 business days" where the FAQ says 5 to 10 working days (F5), credit "ready to use right now" where it says within an hour (F4). The reply prompt never saw the FAQ. Three changes, one per layer:
+
+- **A deterministic check** ([`evals/checks.py`](../evals/checks.py), `timelines_from_faq`): every time a reply names ("5 to 10 working days", "within an hour", "right now", Arabic day ranges) must be one the FAQ or the policy gives. Times that describe the order ("62 minutes late") aren't promises and are skipped. It reads the reply's words, which traces don't carry (stage 11), so it runs where the text is: the gate's live layer, curated cases, annotation snapshots.
+- **A curated case**, `curated-refund-timeline`: the missing-kunafa run from stage 17 (`lab-c9b34f`, "3 to 5 business days"), the message from its snapshot and the order from the platform ([`evals/curate.py`](../evals/curate.py), `from_annotation`), with "timelines from the FAQ" as a reply check.
+- **The fix, compose v3** ([`agentkit/judgments.py`](../agentkit/judgments.py)): the platform's `/policy` now returns the FAQ too, and the reply gets the entry for its decision (refund → F5, credit → F4) with one rule: name only the time it gives. v3 is the default; v1 and v2 stay for the A/B arms.
+
+```bash
+python 20-online-evals/run.py --timelines
+```
+
+Real run (gemini-3.5-flash-lite, [`output-timelines.txt`](output-timelines.txt)):
+
+| | |
+|---|---|
+| the check on stage 17's 30 labelled replies | flags **25 of the 26** labelled not grounded, none of the 4 grounded. The one it misses is the rider reply's "won't happen again": a promise, not a time |
+| the curated case on compose v2 (no FAQ) | **5 of 5** replies fail ("3 to 5 business days" four times, "3-5 business days" once) |
+| the curated case on compose v3 (the FAQ entry) | **0 of 5** |
+
+A first wording of v3 ("in the words of the FAQ") passed the case but copied the FAQ verbatim, "added to the customer's wallet", so it now says to tell it to the customer ("your wallet"). In the release gate's live run after it, 16 of the 20 replies named a time and all 16 were the FAQ's (stage 21).
+
 Full output: [`output.txt`](output.txt).
 
 ## Where it breaks

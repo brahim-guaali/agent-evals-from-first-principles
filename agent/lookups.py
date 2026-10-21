@@ -49,6 +49,7 @@ class History(BaseModel):
 class Policy(BaseModel):
     version: str
     clauses: dict[str, str]
+    faq: dict[str, str] = {}
 
 
 def transient(e):

@@ -3,6 +3,7 @@
     make platform ; make collector
     python 20-online-evals/run.py              # online: real traces replayed as traffic, scored as they land
     python 20-online-evals/run.py --curate     # a flagged live run → a curated case → before/after a fix
+    python 20-online-evals/run.py --timelines  # stage 17's labelled replies → the FAQ timeline check → a case
 """
 import collections
 import json
@@ -111,6 +112,42 @@ def curated():
         print(f"  compose {label}: {fails}/5 replies fail the case")
 
 
+def timelines():
+    from agentkit import judgments
+    from agentkit.cases import CASES
+    from agentkit.llm import Gemini
+    from evals import curate
+    from evals.checks import timelines_from_faq
+    from services.data import FAQ
+    labelled = httpx.get(f"{PLATFORM}/annotations/export", params={"annotator": "reference"}).json()
+    print("=== 1. The timeline check on stage 17's 30 labelled replies ===")
+    counts = collections.Counter()
+    for item in labelled:
+        found = timelines_from_faq(item["snapshot"]["reply"])
+        counts[("grounded" if item["labels"]["reply_grounded"] else "not grounded",
+                "flagged" if found and not found[0] else "passed")] += 1
+    for (label, verdict), n in sorted(counts.items()):
+        print(f"  labelled {label:<13} check {verdict:<8} {n}")
+    print("\n=== 2. One of them as a curated case: the message from the snapshot, the order from the platform ===")
+    item = next(i for i in labelled if i["run_id"] == "lab-c9b34f")
+    expect = next(c for c in CASES if c["id"] == "missing-dessert")["expect"]
+    case = curate.from_annotation(PLATFORM, item, expect, {"currency": "USD", "timelines": "faq"},
+                                  note="reply said 3 to 5 business days; FAQ F5 says 5 to 10 working days",
+                                  case_id="curated-refund-timeline")
+    print(f"  {case['id']}: \"{case['message']}\" · expect {case['expect']} · timelines from the FAQ · "
+          f"from labelled run {case['source_annotation']}")
+    print("\n=== 3. The case on compose v2 (no FAQ) and v3 (the FAQ entry for the decision), five times each ===")
+    decision = {k: item["snapshot"]["decision"][k] for k in ("action", "amount", "clause")}
+    for label, prompt, faq in (("v2", judgments.COMPOSE_V2, None), ("v3", judgments.COMPOSE, judgments.faq_for(decision, FAQ))):
+        fails, said = 0, []
+        for k in range(5):
+            r = judgments.compose(Gemini(), case["message"], decision, lambda piece: True, prompt, faq)
+            problems = curate.reply_problems(case, r["text"])
+            fails += bool(problems)
+            said += problems
+        print(f"  compose {label}: {fails}/5 replies fail the case" + (f" ({collections.Counter(said).most_common(2)})" if said else ""))
+
+
 if __name__ == "__main__":
     httpx.get(f"{PLATFORM}/health")
-    curated() if "--curate" in sys.argv else online()
+    curated() if "--curate" in sys.argv else timelines() if "--timelines" in sys.argv else online()

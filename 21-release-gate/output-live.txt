@@ -1,0 +1,11 @@
+## Release gate
+
+**Golden traces**: 2/2 ✅
+**Case set, scripted model**: 18/18 ✅
+- ✅ accuracy: 18/18 (baseline 18)
+- ✅ curated cases: 2 curated
+- ✅ timelines from the FAQ: 0 of 16 replies that name a time name one the FAQ doesn't
+- ✅ cost per run: $0.00091 (limit $0.002)
+- ✅ slow runs: 0 over 60 s (limit 4)
+
+**Gate: PASS**

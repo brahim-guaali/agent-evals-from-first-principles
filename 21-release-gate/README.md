@@ -8,7 +8,7 @@ The gate has three layers, cheapest first:
 |---|---|---|
 | **Golden traces** | the deterministic checks of stage 18 on two stored real runs ([`evals/golden/`](../evals/golden/)) | instrumentation that broke: tokens no longer recorded, a payment span gone |
 | **Case set, scripted model** | all 18 cases through the real graph, platform and verifier, with a model that gives each case the right judgments | the *code* getting worse: a routing rule, a threshold, a verifier check removed. The model is fixed, so nothing else can be the cause |
-| **Case set and curated cases, real model** | the cases and the curated cases of stage 20 on Gemini, against a stored baseline ([`evals/baseline.json`](../evals/baseline.json)): accuracy may not drop, curated cases must pass, cost and slow runs within limits | prompt and model changes |
+| **Case set and curated cases, real model** | the cases and the curated cases of stage 20 on Gemini, against a stored baseline ([`evals/baseline.json`](../evals/baseline.json)): accuracy may not drop, curated cases must pass, every reply names only the FAQ's timelines, cost and slow runs within limits | prompt and model changes |
 
 The first two need no API key and run on every push and PR. The third needs the Gemini key as a repository secret; without it the job says so and skips (it runs locally with `python -m evals.gate --live`).
 
@@ -45,6 +45,14 @@ python -m evals.gate --live                  # plus the real-model layer (needs 
 | main, the gate added | pass | 2/2 | 18/18 | skipped (no secret) | 56 s |
 | PR #1, threshold 3 → 5 | **1 failed** | 2/2 | **17/18** | skipped | 51 s |
 | PR #1, back to 3 | 88 passed | 2/2 | 18/18 | skipped | 1 m 13 s |
+
+**The live layer, locally (2026-10-22, gemini-3.5-flash-lite).** After compose v3 (stage 20), with a fourth live gate: every reply that names a time names one the FAQ gives ([`evals/checks.py`](../evals/checks.py)). [`output-live.txt`](output-live.txt):
+
+| accuracy | curated cases | timelines from the FAQ | cost per run | slow runs | gate |
+|---|---|---|---|---|---|
+| 18/18 | 2/2 (currency, timeline) | 0 wrong of 16 replies that name a time | $0.00091 | 0 | **PASS** |
+
+The run before it, with v3's first wording, had the same timelines result but one escalation on `slightly-late` (17/18, gate red); three re-runs of that case were all right, and the gate now prints why a case escalated so the next one can be read. A model's layer is noisy: one red run is a reason to look, not proof.
 
 What CI taught on the way:
 

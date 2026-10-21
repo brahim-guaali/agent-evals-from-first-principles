@@ -59,3 +59,13 @@ def test_the_gates_oracle_has_an_answer_for_every_case():
         answer, fraud = oracle(c)
         d = answer("Decision", "")
         assert d["action"] in ("refund", "credit", "refuse") and fraud
+
+
+def test_a_timeline_the_faq_doesnt_give_is_flagged():
+    from evals.checks import timelines_from_faq
+    assert timelines_from_faq("Your $72 refund reaches your card in 3 to 5 business days.")[0] is False
+    assert timelines_from_faq("Your $5 credit is ready to use right now.")[0] is False
+    assert timelines_from_faq("Your $72 refund reaches your card in 5 to 10 working days.")[0] is True
+    assert timelines_from_faq("Your $5 credit is added within an hour.")[0] is True
+    assert timelines_from_faq("سيصل المبلغ خلال ٣ إلى ٥ أيام")[0] is False
+    assert timelines_from_faq("Your order was 62 minutes late, so we refunded $55.") is None   # a fact, not a promise
