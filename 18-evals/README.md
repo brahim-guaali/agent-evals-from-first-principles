@@ -20,19 +20,19 @@ Each check is a function of the run's spans (and, for the spend, its record from
 
 ![Evaluation results inside the trace they judged](evaluations-in-trace.png)
 
-*A real run from stage 10 (59 s, refund $55 to an Arabic message), restored from the collector's archive into the viewer, with the six checks that applied written back into its trace: four passed (green), two failed (red): its spend can't be reconciled, and its reply named riyals. Screenshot of the trace viewer ([`viz/screenshot.js`](../viz/screenshot.js)).*
+*A real run from stage 10 (59 s, refund $55 to an Arabic message), restored from the collector's archive into the viewer, with the six checks that applied written back into its trace: four passed (green), two failed (red): its trace predates the cost attribute, so its spend can't be reconciled, and its reply named riyals. Screenshot of the trace viewer ([`viz/screenshot.js`](../viz/screenshot.js)).*
 
 ## Run it
 
 ```bash
 make platform ; make collector
-python 18-evals/run.py              # checks on every archived real run, results into their traces
+python 18-evals/run.py              # checks on every archived run, results into their traces
 python 18-evals/run.py --cases      # the case set, live: the offline eval
 ```
 
 ## Real run (2026-10-20)
 
-**Every archived real run** from stages 10–12 (75 runs; 46 joined to their traffic-log record):
+**Every archived run** from part 3's stages 10–12 (75 runs of the real model on generated customer traffic; 46 joined to their traffic-log record):
 
 | check | pass | fail |
 |---|---|---|
@@ -48,13 +48,13 @@ python 18-evals/run.py --cases      # the case set, live: the offline eval
 
 328 results written into their traces. What the referee found:
 
-- **43 runs whose spend the trace can't account for.** Not overcharges: the cost attribute (`gen_ai.usage.cost`) only arrived in stage 12, so stage 10 and 11 traces add up to $0 against a reported $0.001–0.002. The check did exactly its job: a bill that the trace can't explain is a bill nobody can audit. The three stage-12 runs reconcile to the micro-dollar.
-- **6 replies named the wrong currency**: riyals (ريال) in Arabic replies, and once **AED** in an English one. The output guardrail already flagged them at run time; now they're counted, per run, forever.
+- **43 older traces predate the cost attribute: the check caught a tracing gap, not a billing problem.** `gen_ai.usage.cost` only arrived in part 3's stage 12, so stage 10 and 11 traces add up to $0 against a reported $0.001–0.002. The check did its job: a trace that can't explain the spend it reports can't be used to audit it. The three stage-12 runs reconcile to the micro-dollar.
+- **6 replies in the wrong currency, counted**: riyals (ريال) in Arabic replies, and once **AED** in an English one. The output guardrail had already flagged each of them at run time; the check counts them, per run, in the trace.
 - **17 runs over 60 s**, mostly the grey-zone reviews and the slow streams.
 - **The first version of a check was wrong.** `every_call_has_usage` first failed 16 runs: model calls the meter had refused, or that failed with no answer, have no tokens to record. A check needs the same care as the code it checks; it now only counts calls that got an answer.
 - Nothing paid twice, nothing paid after a failed lookup, every verify loop stopped within 3 tries.
 
-**The case set, live** (`--cases`, after the free quota reset): **18/18 correct**, 61 model calls, $0.0174 at list price. The offline eval is the case set run as a test: the same 18 messages, the expected decision for each, and nothing to judge but the outcome.
+**The case set, live** (`--cases`, after the daily quota reset): **18/18 correct**, 61 model calls, $0.0174 at list price. The offline eval is the case set run as a test: the same 18 messages, the expected decision for each, and nothing to judge but the outcome.
 
 Full output: [`output.txt`](output.txt).
 

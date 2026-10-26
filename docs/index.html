@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your AI agent needs a referee, not better prompts</title>
-<meta name="description" content="Part 4 of Building an AI agent from first principles: a refund agent gets a referee: checks from traces, people's labels, a calibrated LLM judge, online evals, curated cases and a release gate, all from real runs.">
+<meta name="description" content="Part 4 of Building an AI agent from first principles: a refund agent gets a referee: checks from traces, reference labels, a calibrated LLM judge, online evals, curated cases and a release gate, all from recorded runs.">
 <meta property="og:title" content="Your AI agent needs a referee, not better prompts">
-<meta property="og:description" content="Part 4 of Building an AI agent from first principles: a refund agent gets a referee: checks from traces, people's labels, a calibrated LLM judge, online evals, curated cases and a release gate, all from real runs.">
+<meta property="og:description" content="Part 4 of Building an AI agent from first principles: a refund agent gets a referee: checks from traces, reference labels, a calibrated LLM judge, online evals, curated cases and a release gate, all from recorded runs.">
 <meta property="og:type" content="article">
 <meta property="og:image" content="https://raw.githubusercontent.com/brahim-guaali/agent-evals-from-first-principles/main/21-release-gate/gate.gif">
 <meta name="author" content="Brahim Guaali">
@@ -37,21 +37,21 @@
 <p>Observability is the camera. Evals are the referee. This part builds one, in six stages, on the same agent: <strong><a href="https://github.com/brahim-guaali/agent-evals-from-first-principles">github.com/brahim-guaali/agent-evals-from-first-principles</a></strong></p>
 <h2>1. The rules that need no judgement</h2>
 <p>Some things are certain from the trace alone: a run paid at most once, nothing was paid after a failed lookup, the verify loop stopped within three tries, every model call that got an answer recorded its tokens, the spend in the trace matches the bill. Checking them is just code, a function of the run's spans.</p>
-<p>Because they read traces, they work on every run ever recorded, without running the agent again. I ran nine of them on the 75 real runs archived from part 3. The OpenTelemetry GenAI conventions have an event for the result (<code>gen_ai.evaluation.result</code>), so each verdict went back into the trace it judged:</p>
+<p>Because they read traces, they work on every run ever recorded, without running the agent again. I ran nine of them on the 75 runs archived from part 3 (the real model on generated customer traffic). The OpenTelemetry GenAI conventions have an event for the result (<code>gen_ai.evaluation.result</code>), so each verdict went back into the trace it judged:</p>
 <p><img alt="Evaluation results inside the trace they judged" src="https://raw.githubusercontent.com/brahim-guaali/agent-evals-from-first-principles/main/18-evals/evaluations-in-trace.png" /></p>
 <p><em>A real run with the checks that applied written back into its trace: four passed, two failed.</em></p>
 <p>What the referee found:</p>
 <ul>
-<li><strong>43 runs whose spend the trace couldn't account for.</strong> Not overcharges: the cost attribute only arrived halfway through part 3, so older traces added up to $0 against a real bill. A bill the trace can't explain is a bill nobody can audit.</li>
-<li><strong>6 replies in the wrong currency</strong>: riyals in Arabic replies, and once AED in an English one.</li>
+<li><strong>43 older traces predated the cost attribute.</strong> It only arrived halfway through part 3, so those traces added up to $0 against the spend their runs reported. The check caught a tracing gap, not a billing problem: a trace that can't explain the spend it reports can't be used to audit it.</li>
+<li><strong>6 replies in the wrong currency, counted</strong>: riyals in Arabic replies, and once AED in an English one. The output guardrail had already flagged each of them at run time; the check turns them into a number per run.</li>
 <li><strong>17 runs over the 60-second target.</strong></li>
 <li><strong>My first version of a check was wrong.</strong> "Every model call has token counts" failed 16 runs: calls the budget meter had refused have no tokens to record. A check needs the same care as the code it checks.</li>
 </ul>
-<p>And the case set, run live as a test: 18 out of 18 correct.</p>
+<p>And the case set, run on the real model as a test: 18 out of 18 correct.</p>
 <h2>2. Labels, and a judge that reads like them</h2>
 <p>Code can check amounts and counts. It can't read. Is "your refund arrives in 3 to 5 days" grounded in the FAQ? Was a refusal explained kindly? That takes judgement, and a model can give it for every run, but only once it's been measured against runs whose right answers are known.</p>
-<p>So the platform got an annotation queue: thirty real runs, each queued with a reason (a sample of traffic, every guardrail flag, every hand-written case) and frozen as the reviewer would see them. Four questions each: is the decision right, are the amount and currency right, does the reply say only what the facts support, how does it read.</p>
-<p>How the labels were made matters, so here it is plainly. <strong>The factual questions were labelled from the known right answers</strong>: every run is a test case or a variant of one, with its expected decision on record. <strong>Grounding and tone were labelled by a second model (Claude) with a written rubric</strong>, in one pass before the judge (Gemini) ran. Model-against-model agreement is weaker evidence than people's labels; a person-labelled set is the next step.</p>
+<p>So the platform got an annotation queue: thirty runs on the real model, each queued with a reason (a sample of traffic, every guardrail flag, every hand-written case) and frozen as the reviewer would see them. Four questions each: is the decision right, are the amount and currency right, does the reply say only what the facts support, how does it read.</p>
+<p>How the labels were made matters, so here it is plainly. <strong>The factual questions were labelled from the known right answers</strong>: every run is a test case or a variant of one, with its expected decision on record. <strong>Grounding and tone were labelled by a second model (Claude) with a written rubric</strong>, in one pass before the judge (Gemini) ran. Nobody labelled by hand. Model-against-model agreement is weaker evidence than a person's labels; a person-labelled set is the next step.</p>
 <p>The labels found something none of the code checks could: <strong>26 of 30 replies said things nobody had told them.</strong> 17 refund replies promised the money "in 3 to 5 business days"; the FAQ says 5 to 10 working days. The reply prompt never sees the FAQ, so it wrote what refund emails usually say. Every decision behind those replies was right.</p>
 <p>Then the judge, on the same 30 runs:</p>
 <p>| question | labels from | agreement | kappa |
@@ -60,20 +60,20 @@
 | amount and currency right | known right answers | 30/30 | 1.00 |
 | reply grounded | second model, rubric | 22/30 | 0.37 |
 | tone | second model, rubric | 25/30 | |</p>
-<p>On facts it's reliable. Its one "wrong decision" was a gap in what it was shown: a refund that a manager had approved, recorded under the wrong clause. On grounding, it caught every "3 to 5 business days" and let through every "your credit is ready right now" (the FAQ says within an hour). That's a policy question, and it belongs in the judge's prompt. Swapping the order of two replies never changed its pick (no position bias in 12 pairs), but it preferred the longer reply 11 times out of 12.</p>
+<p>The 73% on grounding is agreement with another model's labels, not with people's. On facts it's reliable. Its one "wrong decision" was a gap in what it was shown: a refund that a manager had approved, recorded under the wrong clause. On grounding, it caught every "3 to 5 business days" and let through every "your credit is ready right now" (the FAQ says within an hour), which the labelling model's rubric counts as ungrounded. Which reading is right is a policy question, and it belongs in the judge's prompt. Swapping the order of two replies never changed its pick (no position bias in 12 pairs), but it preferred the longer reply 11 times out of 12.</p>
 <h2>3. The referee on the field</h2>
-<p>A batch after the fact isn't enough. An online evaluator now follows the trace viewer and scores every run as it lands. Replaying 150 real runs as live traffic, three a second, the first score came 1 second after the first run, and all 150 within 54 seconds. Each score is also a metric a dashboard can draw and an alert can watch.</p>
-<p>Then the other direction: a failure production found should <strong>become a case</strong>. The Arabic reply naming riyals showed up again on live traffic and was flagged. A trace doesn't hold the customer's words (message bodies are off, part 3), so the case was built from the platform's own records: the message, the order as it was, and a reviewer's expectation: refund $55, dollars only.</p>
+<p>A batch after the fact isn't enough. An online evaluator now follows the trace viewer and scores every run as it lands. Replaying 150 runs drawn from the 75-run archive as if they were live, three a second, the first score came 1 second after the first run, and all 150 within 54 seconds. Each score is also a metric a dashboard can draw and an alert can watch.</p>
+<p>Then the other direction: a failure production found should <strong>become a case</strong>. The Arabic reply naming riyals showed up again in a fresh run on the real model and was flagged. A trace doesn't hold the customer's words (message bodies are off, part 3), so the case was built from the platform's own records: the message, the order as it was, and the expectation: refund $55 (the case's known answer), dollars only.</p>
 <p>Then the case against both reply prompts, five replies each:</p>
 <p>| reply prompt | replies that failed |
 |---|---|
 | v1, the original | <strong>5 of 5</strong> |
 | v2, the fix from part 3 | <strong>0 of 5</strong> |</p>
-<p>Part 3's A/B test couldn't prove that fix on live traffic: one slip in 29 runs against none in 31, p = 0.30. A curated case aimed at the one place it goes wrong proved it in ten calls. v2 is now the default.</p>
+<p>Part 3's A/B test (60 runs, simulated customers) couldn't prove that fix: one slip in 29 runs against none in 31, p = 0.30. A curated case aimed at the one place it goes wrong proved it in ten calls. Today's default reply prompt is v3: v2's currency rule plus the FAQ entry for each decision, the fix for the timelines the labels found.</p>
 <h2>4. The gate</h2>
 <p>Every check so far runs <em>after</em> something ships. A release gate runs before: on every pull request, GitHub Actions runs the referee, cheapest layer first:</p>
 <ol>
-<li><strong>Golden traces</strong>: the deterministic checks on stored real runs. Catches instrumentation that broke.</li>
+<li><strong>Golden traces</strong>: the deterministic checks on stored recorded runs. Catches instrumentation that broke.</li>
 <li><strong>The case set with a scripted model</strong>: all 18 cases through the real graph, platform and verifier, with a model that always gives the right judgments. The model is fixed, so only the <em>code</em> can be the cause.</li>
 <li><strong>The case set and curated cases on the real model</strong>, against a stored baseline. Catches prompt and model changes.</li>
 </ol>
@@ -84,7 +84,7 @@
 <p>The first CI run also found a flaky test: the race test from part 2 (two runs, one order, same moment) passed on my laptop every time and failed on GitHub's slower runner, where the second run sometimes read the history <em>after</em> the first had paid and refused instead. Both outcomes are right; the test had assumed one. It now asserts what matters: exactly one payment.</p>
 <h2>5. And the platforms</h2>
 <p>Everything here is hand-built so each piece can be seen. Most teams start from a platform and an auto-instrumentation library that patches LangGraph and the model SDK with one line each. I ran the same refund both ways, on the same viewer.</p>
-<p>Auto-instrumentation recorded all 6 model calls with their tokens, and every node's input and output. And <strong>none of the model calls were in the run</strong>: the graph's 16 spans formed one trace, the 6 Gemini calls came out as 6 separate traces with no parent. The LangChain instrumentor deliberately doesn't make its spans the current context, so the Gemini one has nothing to attach to. Two libraries that each work, combined, gave a broken trace. What was missing besides: the decision, the policy clause, the payment, the guardrail verdicts, the cost, that fraud review is a sub-agent. Those come from code that knows what the agent is for.</p>
+<p>Auto-instrumentation recorded all 6 model calls with their tokens, and every node's input and output. And <strong>none of the model calls were in the run</strong>: the graph's 16 spans formed one trace, the 6 Gemini calls came out as 6 separate traces with no parent. The LangChain instrumentor deliberately doesn't make its spans the current context, so the Gemini one has nothing to attach to. Two libraries that each work, combined, gave a broken trace. What was missing besides: the decision, the policy clause, the payment, the guardrail verdicts, the cost, that fraud review is a sub-agent. Those come from code that knows what the agent is for. Sending the same spans to Phoenix and Langfuse is the next step; I haven't run it yet.</p>
 <h2>What I'd tell myself</h2>
 <ol>
 <li><strong>Start with checks that need no judgement.</strong> They're cheap, exact, and run on every trace you ever kept.</li>
@@ -95,7 +95,8 @@
 <li><strong>Gate pull requests in layers</strong>, cheapest first, with a fixed model so the code can be blamed alone.</li>
 <li><strong>With auto-instrumentation, check the tree first.</strong> Is each run one trace?</li>
 </ol>
-<p>Four parts in, the refund agent went from a loop that paid twice to a graph that can't, survived production, became visible, and now gets judged before every change ships. The camera says what happened. The referee says whether it was good.</p>
+<p>Four parts in: a loop with no guarantees, a graph that has them, an agent that survives production, a camera, and a referee that judges every change before it ships. The camera says what happened. The referee says whether it was good.</p>
+<p><em>Built on personal time with made-up data; it isn't based on any employer's systems.</em></p>
 
 <p><strong>The series</strong>, <em>Building an AI agent from first principles</em>:
 1. <a href="https://medium.com/@brahimg/i-rebuilt-one-ai-agent-seven-times-to-understand-graph-engineering-80b9983cd921">Part 1, graph engineering</a>: from a naive loop to a graph (<a href="https://github.com/brahim-guaali/graph-engineering-from-first-principles">code</a>)

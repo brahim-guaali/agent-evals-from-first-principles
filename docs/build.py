@@ -12,7 +12,7 @@ text = (HERE / "article.md").read_text()
 title = text.splitlines()[0].lstrip("# ").strip()
 body = markdown.markdown(text.split("\n", 1)[1], extensions=["fenced_code"]).replace("<hr />", "")
 desc = ("Part 4 of Building an AI agent from first principles: a refund agent gets a referee: checks from traces, "
-        "people's labels, a calibrated LLM judge, online evals, curated cases and a release gate, all from real runs.")
+        "reference labels, a calibrated LLM judge, online evals, curated cases and a release gate, all from recorded runs.")
 og = "https://raw.githubusercontent.com/brahim-guaali/agent-evals-from-first-principles/main/21-release-gate/gate.gif"
 page = f"""<!doctype html>
 <html lang="en">

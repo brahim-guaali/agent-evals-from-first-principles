@@ -1,4 +1,4 @@
-"""Alerts on real traffic, animated from stage 14's evaluation (14-alerts/data/alerts.json).
+"""Alerts over recorded runs, animated from stage 14's evaluation (14-alerts/data/alerts.json).
 
     python viz/alerts.py 14-alerts/data/alerts.json var/frames/alerts
 
@@ -88,7 +88,7 @@ def frame(data, upto, path):
                          ha="center", weight="bold")
             key.append(f"{letter}  {text}")
     axes[2].set_xlabel("minutes", color=INK2, fontsize=8.5)
-    fig.suptitle("Alerts evaluated every minute over 90 minutes of real traffic", color=INK, fontsize=11, x=0.02, ha="left")
+    fig.suptitle("Alerts evaluated every minute over 90 minutes of recorded runs (real model, generated customers)", color=INK, fontsize=11, x=0.02, ha="left")
     fig.tight_layout(rect=(0, 0.09, 1, 0.97))
     fig.text(0.02, 0.012, "\n".join(key), color=INK2, fontsize=8.5, va="bottom", linespacing=1.5)
     fig.savefig(path, facecolor=SURFACE)

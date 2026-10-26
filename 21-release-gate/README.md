@@ -6,7 +6,7 @@ The gate has three layers, cheapest first:
 
 | Layer | Runs | Catches |
 |---|---|---|
-| **Golden traces** | the deterministic checks of stage 18 on two stored real runs ([`evals/golden/`](../evals/golden/)) | instrumentation that broke: tokens no longer recorded, a payment span gone |
+| **Golden traces** | the deterministic checks of stage 18 on two stored recorded runs ([`evals/golden/`](../evals/golden/)) | instrumentation that broke: tokens no longer recorded, a payment span gone |
 | **Case set, scripted model** | all 18 cases through the real graph, platform and verifier, with a model that gives each case the right judgments | the *code* getting worse: a routing rule, a threshold, a verifier check removed. The model is fixed, so nothing else can be the cause |
 | **Case set and curated cases, real model** | the cases and the curated cases of stage 20 on Gemini, against a stored baseline ([`evals/baseline.json`](../evals/baseline.json)): accuracy may not drop, curated cases must pass, every reply names only the FAQ's timelines, cost and slow runs within limits | prompt and model changes |
 
@@ -14,11 +14,11 @@ The first two need no API key and run on every push and PR. The third needs the 
 
 ## A well-meant change, caught
 
-To see it work, a real pull request: [#1 "Fewer manager approvals: only customers with 5+ refunds in 30 days"](https://github.com/brahim-guaali/agent-observability-from-first-principles/pull/1). Managers are busy, the threshold goes from 3 to 5. It reads like a reasonable tweak. Policy §8 still says three.
+To see it work, a real pull request: [#1 "Fewer manager approvals: only customers with 5+ refunds in 30 days"](https://github.com/brahim-guaali/agent-observability-from-first-principles/pull/1), in the part 3 repo (public from 3 November). Managers are busy, the threshold goes from 3 to 5. It reads like a reasonable tweak. Policy §8 still says three.
 
 ![The gate going red, then green](gate.gif)
 
-*The real CI runs of PR #1 ([red](https://github.com/brahim-guaali/agent-observability-from-first-principles/actions/runs/39343518759), [green](https://github.com/brahim-guaali/agent-observability-from-first-principles/actions/runs/39343679243)): the GitHub run page (screenshot, signed out) above the gate's own output from that run, rendered with [`viz/terminal.py`](../viz/terminal.py).*
+*The real CI runs of PR #1 ([red](https://github.com/brahim-guaali/agent-observability-from-first-principles/actions/runs/39343518759), [green](https://github.com/brahim-guaali/agent-observability-from-first-principles/actions/runs/39343679243), in the part 3 repo, public from 3 November): the GitHub run page (screenshot, signed out) above the gate's own output from that run, rendered with [`viz/terminal.py`](../viz/terminal.py).*
 
 ```
 FAILED tests/test_01_memory.py::test_a_frequent_claimer_needs_a_manager_even_for_15_dollars

@@ -1,6 +1,6 @@
 # 19 · The judge, and how far to trust it
 
-Stage 17's labels took an afternoon for 30 runs. A model that answers the same four questions could read every run, but only once we know where it agrees with the labels and where it doesn't. So the judge is **calibrated before its verdicts count** ([`evals/judge.py`](../evals/judge.py)):
+Stage 17 labelled 30 runs, slowly. A model that answers the same four questions could read every run, but only once we know where it agrees with the labels and where it doesn't. So the judge is **calibrated before its verdicts count** ([`evals/judge.py`](../evals/judge.py)):
 
 - **The same questions, the same snapshot.** The judge (Gemini) gets exactly what the annotation page shows: the message, the facts, the policy and FAQ, the decision and the reply. It answers in a fixed shape: reasoning, three yes/no questions and a tone.
 - **Agreement and Cohen's kappa per question.** Agreement alone flatters a judge when most answers are "yes": a judge that always says yes agrees 90% with labels that are 90% yes. Kappa is agreement beyond what chance would give (0 = chance, 1 = perfect). When every label is the same, kappa can't be computed, and the script says so instead of printing a number.

@@ -1,4 +1,4 @@
-"""Stage 17: an annotation queue. Thirty real runs, queued with why, labelled by a person.
+"""Stage 17: an annotation queue. Thirty runs on the real model, queued with why, labelled from the known right answers and by a second model with a rubric.
 
     make platform ; make collector
     python 17-annotation/run.py              # runs and queues them; then label at http://127.0.0.1:8710/ui/annotate

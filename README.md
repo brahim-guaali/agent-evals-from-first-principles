@@ -3,17 +3,17 @@
 > **Building an AI agent from first principles**, a series in four parts:
 > 1. [Graph engineering](https://github.com/brahim-guaali/graph-engineering-from-first-principles): the agent's design, from a naive loop to a LangGraph graph
 > 2. [A production agent](https://github.com/brahim-guaali/production-agent-from-first-principles): memory, conversations, sub-agents, streaming, failures, guardrails, traffic, signals
-> 3. [Observability](https://github.com/brahim-guaali/agent-observability-from-first-principles): the camera (traces, cost, sampling, alerts, debugging)
+> 3. [Observability](https://github.com/brahim-guaali/agent-observability-from-first-principles): the camera (traces, cost, sampling, alerts, debugging); public from 3 November
 > 4. **Evals** (this repo): the referee (labels, checks, an LLM judge, online evals, a release gate)
 
 A course in runnable code. The refund agent from parts 1–3 is production-shaped and fully traced: we can see everything it does. This part decides whether what it did was **good**, and stops a change that makes it worse from shipping.
 
-- **Labels first:** an annotation queue where runs are labelled against fixed questions: from the known right answers for the factual ones, by a rubric for the rest.
+- **Labels first:** an annotation queue where runs are labelled against fixed questions: from the known right answers for the factual ones, by a second model with a written rubric for the rest. Nobody labelled by hand.
 - **Checks that need no judgement:** nine rules read straight from a run's trace (does the spend match the bill, did it pay twice, did the reply name the right currency), with the results written back into the trace.
-- **A model as judge**, but only after it's calibrated against those labels, and tested for position bias.
-- **Online evals** that score live traffic as it arrives, and **curated cases** made from bad production runs.
+- **A model as judge**, but only after it's calibrated against those labels (on grounding and tone, that is one model measured against another), and tested for position bias.
+- **Online evals** that score each run as it arrives (here, 150 replays of 75 recorded runs), and **curated cases** made from flagged runs.
 - **A release gate** in GitHub Actions: a well-meant change that makes the agent worse goes red.
-- **Platforms:** the same OpenTelemetry spans in Phoenix and Langfuse, next to auto-instrumentation.
+- **Platforms:** hand-written spans next to auto-instrumentation on the same run; Phoenix and Langfuse are planned, not run yet.
 
 ![The release gate going red on a real PR, then green](21-release-gate/gate.gif)
 
@@ -24,12 +24,12 @@ A course in runnable code. The refund agent from parts 1–3 is production-shape
 | # | Folder | What it adds |
 |---|---|---|
 | 00 | [`00-starting-point/`](00-starting-point/) | The agent as parts 1–3 left it |
-| 17 | [`17-annotation/`](17-annotation/) | An annotation queue: frozen run snapshots, a label schema, a labelling page |
+| 17 | [`17-annotation/`](17-annotation/) | An annotation queue: frozen run snapshots, a label schema, a labelling page; reference labels from known answers and a second model |
 | 18 | [`18-evals/`](18-evals/) | Nine deterministic checks read from traces; results as `gen_ai.evaluation.result` in the trace |
 | 19 | [`19-judge/`](19-judge/) | An LLM judge calibrated on labelled runs (agreement, kappa, factual and judgement questions apart), and a position-bias test |
-| 20 | [`20-online-evals/`](20-online-evals/) | Live traffic scored as it lands; a bad production run becomes a test case |
+| 20 | [`20-online-evals/`](20-online-evals/) | Runs scored as they land (replayed from the archive); a flagged run becomes a test case |
 | 21 | [`21-release-gate/`](21-release-gate/) | GitHub Actions: golden traces, every case through the real graph, live cases with a key |
-| 22 | [`22-platforms/`](22-platforms/) | Phoenix and Langfuse, and hand-written spans vs auto-instrumentation |
+| 22 | [`22-platforms/`](22-platforms/) | Hand-written spans vs auto-instrumentation on the same run (Phoenix and Langfuse planned, not run yet) |
 
 Stage numbers continue from part 3 (stages 09–16) so the whole series reads as one course.
 
@@ -50,7 +50,7 @@ make test && python -m evals.gate
 |---|---|
 | [`evals/`](evals/) | The checks, the judge, online evals, curation, the gate, golden traces, the baseline |
 | [`agent/`](agent/), [`agentkit/`](agentkit/), [`services/`](services/) | The agent, its kit and its platform from parts 1–3 |
-| [`history/`](history/) | Real recorded runs the evals read |
+| [`history/`](history/) | Recorded runs the evals read (the real model, generated customer traffic) |
 | [`tests/`](tests/) | Run without a key: a scripted model stands in for Gemini |
 
-MIT licensed. All data is made up.
+MIT licensed. Built on personal time with made-up data; it isn't based on any employer's systems.

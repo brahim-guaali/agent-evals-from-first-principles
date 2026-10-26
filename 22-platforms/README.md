@@ -41,8 +41,8 @@ Full output: [`output.txt`](output.txt).
 
 ## Phoenix and Langfuse
 
-Not run yet: Langfuse Cloud needs an account (the free tier is enough), and Phoenix is a ~400 MB local install. Both accept OTLP, so the plan is the same for each: point the collector's forward exporter (stage 10) at them, send the same two runs, and see what each makes of the GenAI-convention spans versus the OpenInference ones.
+Not run yet: Langfuse Cloud needs an account, and Phoenix is a ~400 MB local install. Both accept OTLP, so the plan is the same for each: point the collector's forward exporter (stage 10) at them, send the same two runs, and see what each makes of the GenAI-convention spans versus the OpenInference ones.
 
 ## Where it ends
 
-This is the end of the series. Part 1 built the agent, part 2 made it survive production, part 3 made it visible, and part 4 made it judged: deterministic checks, people's labels, a calibrated judge, live checks, curated cases and a gate that blocks a change before it ships. The camera says what happened; the referee says whether it was good.
+This is the end of the series. Part 1 built the agent, part 2 made it survive production, part 3 made it visible, and part 4 made it judged: deterministic checks, reference labels (known right answers, and a second model with a written rubric; nobody labelled by hand), a judge calibrated against them, online checks, curated cases and a gate that blocks a change before it ships. The camera says what happened; the referee says whether it was good.

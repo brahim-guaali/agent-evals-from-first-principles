@@ -1,6 +1,6 @@
 # 17 · Annotation: the labels a judge is measured against
 
-Stage 18's checks read what's certain from a trace. A lot of what makes a reply good isn't certain: is everything it says supported, does it read well to an upset customer? Before a model can judge that (stage 19), there has to be something to judge it *against*: runs with known-good labels.
+Stage 18's checks read what's certain from a trace. A lot of what makes a reply good isn't certain: is everything it says supported, does it read well to an upset customer? Before a model can judge that (stage 19), there has to be something to judge it *against*: runs with reference labels.
 
 **The queue** ([`services/app.py`](../services/app.py), `/annotations/…`, page [`/ui/annotate`](../services/ui/annotate.html)). Runs are queued with *why* (a sample of traffic, every guardrail flag, every hand-written case), and each item is a **snapshot frozen when the run ended** ([`agentkit/annotation.py`](../agentkit/annotation.py)): the message, the reply, the decision and its reason, the order, the fraud score, the history, the policy and FAQ. Traces don't carry message bodies (stage 11), so the snapshot lives with the platform's data, where access to customer messages is already controlled, and links to its trace by run id.
 
@@ -14,7 +14,7 @@ Four questions per run, the same ones the judge will answer: is the decision wha
 
 ```bash
 make platform ; make collector
-python 17-annotation/run.py                   # 30 real runs, queued with why
+python 17-annotation/run.py                   # 30 runs on the real model, queued with why
 python 17-annotation/run.py --report          # what the labels say
 ```
 
@@ -46,4 +46,4 @@ Fixed since: the reply prompt gets the FAQ entry for its decision, and a determi
 
 ## Where it breaks
 
-Labelling 30 runs is an afternoon; labelling every run is impossible. A model that answers the same four questions could read every run, but only if it agrees with the labels. Next: [19 · the judge](../19-judge/), and how far to trust it.
+Labelling 30 runs is slow, and the person-labelled set is still to come; labelling every run is impossible. A model that answers the same four questions could read every run, but only if it agrees with the labels. Next: [19 · the judge](../19-judge/), and how far to trust it.
