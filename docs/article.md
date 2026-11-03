@@ -39,12 +39,10 @@ The labels found something none of the code checks could: **26 of 30 replies sai
 
 Then the judge, on the same 30 runs:
 
-| question | labels from | agreement | kappa |
-|---|---|---|---|
-| decision correct | known right answers | 29/30 | n/a (every label is yes) |
-| amount and currency right | known right answers | 30/30 | 1.00 |
-| reply grounded | second model, rubric | 22/30 | 0.37 |
-| tone | second model, rubric | 25/30 | |
+- **Decision correct** (labels from the known right answers): agreed on 29 of 30; kappa n/a, every label is yes.
+- **Amount and currency right** (known right answers): 30 of 30, kappa 1.00.
+- **Reply grounded** (second model, with a rubric): 22 of 30, kappa 0.37.
+- **Tone** (second model, with a rubric): 25 of 30.
 
 The 73% on grounding is agreement with another model's labels, not with people's. On facts it's reliable. Its one "wrong decision" was a gap in what it was shown: a refund that a manager had approved, recorded under the wrong clause. On grounding, it caught every "3 to 5 business days" and let through every "your credit is ready right now" (the FAQ says within an hour), which the labelling model's rubric counts as ungrounded. Which reading is right is a policy question, and it belongs in the judge's prompt. Swapping the order of two replies never changed its pick (no position bias in 12 pairs), but it preferred the longer reply 11 times out of 12.
 
@@ -56,10 +54,8 @@ Then the other direction: a failure production found should **become a case**. T
 
 Then the case against both reply prompts, five replies each:
 
-| reply prompt | replies that failed |
-|---|---|
-| v1, the original | **5 of 5** |
-| v2, the fix from part 3 | **0 of 5** |
+- **v1, the original reply prompt:** 5 of 5 replies failed.
+- **v2, the fix from part 3:** 0 of 5 failed.
 
 Part 3's A/B test (60 runs, simulated customers) couldn't prove that fix: one slip in 29 runs against none in 31, p = 0.30. A curated case aimed at the one place it goes wrong proved it in ten calls. Today's default reply prompt is v3: v2's currency rule plus the FAQ entry for each decision, the fix for the timelines the labels found.
 
